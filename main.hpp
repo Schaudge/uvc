@@ -52,7 +52,7 @@ std::pair<uvc1_readnum_t, T>
 indelToData_getMajority(const std::map<T, uvc1_readnum_t> & indel2cnt) {
     uvc1_readnum_t maxcnt = 0;
     T argmaxcnt = T();
-    for (const auto ic : indel2cnt) {
+    for (const auto & ic : indel2cnt) {
         if (ic.second > maxcnt || 
                 ((ic.second == maxcnt) && (ic.first > argmaxcnt))) {
             maxcnt = ic.second;

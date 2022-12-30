@@ -19,7 +19,7 @@ find_library(HTS_LIB NAMES hts HINTS ${HTSLIB_DIR} STATIC IMPORTED)
 # omit
 
 add_executable(${PROJECT_NAME} main.cpp CmdLineArgs.cpp common.cpp grouping.cpp MolecularID.cpp logging.cpp version.cpp)
-target_link_libraries(${PROJECT_NAME} -fopenmp hts pthread m z bz2 lzma)
+target_link_libraries(${PROJECT_NAME} -fopenmp hts pthread m z bz2 lzma deflate)
 
 add_executable(debarcode debarcode_main.c)
 target_link_libraries(debarcode hts pthread m z bz2 lzma)
