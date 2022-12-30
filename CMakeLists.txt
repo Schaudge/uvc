@@ -5,7 +5,7 @@ project(${PROJECT_NAME} C CXX)
 set(CMAKE_CXX_STANDARD 14)
 add_definitions(-DCOMMIT_VERSION=":latest" -DCOMMIT_DIFF_SH="Schaudge King" -DCOMMIT_DIFF_FULL="")
 #add_definitions(-DUSE_STDLIB_THREAD)
-add_compile_options(-std=c++14 -static-libstdc++ -Wall)
+add_compile_options(-std=c++14 -static-libstdc++ -Wall -fconcepts)
 
 ### add all required header files
 include_directories(${PROJECT_SOURCE_DIR})

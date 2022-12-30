@@ -2476,6 +2476,7 @@ struct Symbol2CountCoverageSet {
                     + "|" + anyuint2hexstring(mb.hashvalue);
             
             const size_t fqidx = ((n_PE_alns >= n_SE_alns) ? (idx^strand) : 2);
+
             std::string fqcomment_umi_famsize, fqcomment_umi_famcons;
             uvc1_readnum_t max_family_size = 0;
             for (const auto & baseBQ : stringof_baseBQ_pairs) {

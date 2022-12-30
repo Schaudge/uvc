@@ -70,14 +70,14 @@ const char *const FILTER_IDS[] = {
 };
 const char *const FILTER_LINES[] = {
     "##FILTER=<ID=noVar,Description=\"Not a variant (for example, when REF and ALT are the same), but still included to get all statistics. \">",
-    "##FILTER=<ID=upstreamDel,Description=\"Deletion extended from another upstream deletion\">",
-    "##FILTER=<ID=s50,Description=\"Less than 50% of samples have data\">",
-    "##FILTER=<ID=Q10,Description=\"Quality below 10 and no other filters\">",
-    "##FILTER=<ID=Q20,Description=\"Quality below 20 and no other filters\">",
-    "##FILTER=<ID=Q30,Description=\"Quality below 30 and no other filters\">",
-    "##FILTER=<ID=Q40,Description=\"Quality below 40 and no other filters\">",
-    "##FILTER=<ID=Q50,Description=\"Quality below 50 and no other filters\">",
-    "##FILTER=<ID=Q60,Description=\"Quality below 60 and no other filters\">",
+    "##FILTER=<ID=upstreamDel,Description=\"Deletion extended from another upstream deletion. \">",
+    "##FILTER=<ID=s50,Description=\"Less than 50% of samples have data. \">",
+    "##FILTER=<ID=Q10,Description=\"Quality below 10 and no other filters. \">",
+    "##FILTER=<ID=Q20,Description=\"Quality below 20 and no other filters. \">",
+    "##FILTER=<ID=Q30,Description=\"Quality below 30 and no other filters. \">",
+    "##FILTER=<ID=Q40,Description=\"Quality below 40 and no other filters. \">",
+    "##FILTER=<ID=Q50,Description=\"Quality below 50 and no other filters. \">",
+    "##FILTER=<ID=Q60,Description=\"Quality below 60 and no other filters. \">",
     "##FILTER=<ID=aInsertSize,Description=\"For FORMAT/FTS: Stranded insert bias, meaning the most-supported strand has abnormal insert size at either the left or right end. \">",
     "##FILTER=<ID=aBQXM,Description=\"For FORMAT/FTS: Passing-filter bias, meaning the variant allele is supported by reads with low base qualities at the variant site and/or with high number of mismatches relative to all alleles. \">",
     "##FILTER=<ID=bcDup,Description=\"For FORMAT/FTS: Duplication bias for less-than-expected amplification of variant reads, meaning the variant is under-amplified by PCR relative to all alleles. \">",
@@ -98,7 +98,7 @@ const char *const FILTER_LINES[] = {
     "##FILTER=<ID=c2StrictPosL,Description=\"For FORMAT/FTS: Strictly defined position bias (which has zero prior probability of not having bias) on the left mapping coordinate of the tier-2 single-strand consensus sequence (SSCS) relative to all alleles. \">",
     "##FILTER=<ID=c2StrictPosR,Description=\"For FORMAT/FTS: Strictly defined position bias (which has zero prior probability of not having bias) on the right mapping coordinate of the tier-2 single-strand consensus sequence (SSCS) relative to all alleles. \">",
 };
-static const unsigned int FORMAT_NUM = 263;
+static const unsigned int FORMAT_NUM = 258;
 enum FORMAT_ENUM {
     GT,
     GQ,
@@ -197,32 +197,28 @@ enum FORMAT_ENUM {
     aNC,
     _BDP,
     bDPf,
-    BDPf,
     bDPr,
-    BDPr,
-    _BT,
+    BDPb,
+    BDPd,
     bTAf,
-    BTAf,
     bTAr,
-    BTAr,
+    BTAb,
     bTBf,
-    BTBf,
     bTBr,
-    BTBr,
+    BTBb,
     _CDP1,
     cDP1f,
-    CDP1f,
     cDP1r,
-    CDP1r,
+    CDP1b,
+    CDP1d,
     cDP12f,
-    CDP12f,
     cDP12r,
-    CDP12r,
+    CDP12b,
     _CDP2,
     cDP2f,
-    CDP2f,
     cDP2r,
-    CDP2r,
+    CDP2b,
+    CDP2d,
     c2BQ2,
     C2BQ2,
     c2LP0,
@@ -253,22 +249,21 @@ enum FORMAT_ENUM {
     C2RBL,
     _CDPx,
     cDP3f,
-    CDP3f,
     cDP3r,
-    CDP3r,
+    CDP3b,
     cDP21f,
-    CDP21f,
     cDP21r,
-    CDP21r,
+    CDP21b,
     _cDPMm,
     cDPMf,
-    CDPMf,
     cDPMr,
-    CDPMr,
+    CDPMb,
     cDPmf,
-    CDPmf,
     cDPmr,
-    CDPmr,
+    CDPmb,
+    CDPDb,
+    cDPDf,
+    cDPDr,
     _DDP,
     DDP1,
     dDP1,
@@ -348,8 +343,8 @@ enum FORMAT_ENUM {
     gapSeq,
     gapbAD1,
     gapcAD1,
-    gcAD2,
-    gcAD3,
+    gc2AD,
+    gc2dAD,
     _g3,
     bDPa,
     cDP0a,
@@ -364,8 +359,8 @@ enum FORMAT_ENUM {
     vNLODQ,
     note,
 };
-const char *const FORMAT_STRING_PER_REC = "GT:GQ:HQ:FT:FTS:_A_:DP:AD:bDP:bAD:c2DP:c2AD:_Aa:APDP:APXM:_Ab:APLRID:APLRI:APLRP:_Ac:ALRPxT:ALRIT:ALRIt:ALRPt:ALRBt:_AQ:aMQs:AMQs:a1BQf:A1BQf:a1BQr:A1BQr:_ADPf:aDPff:ADPff:aDPfr:ADPfr:_ADPr:aDPrf:ADPrf:aDPrr:ADPrr:_ALP:aLP1:ALP1:aLP2:ALP2:aLPL:ALPL:_ARP:aRP1:ARP1:aRP2:ARP2:aRPL:ARPL:_ALB:aLB1:aLB2:ALB2:aLBL:ALBL:_ARB:aRB1:aRB2:ARB2:aRBL:ARBL:_ALI:aLI1:aLI2:ALI2:aLIr:ALIr:_ARI:aRI1:aRI2:ARI2:aRIf:ARIf:_AX:aBQ2:ABQ2:aPF2:APF2:aP1:AP1:aP2:AP2:_Ax:aPF1:aLIT:aRIT:aP3:aNC:_BDP:bDPf:BDPf:bDPr:BDPr:_BT:bTAf:BTAf:bTAr:BTAr:bTBf:BTBf:bTBr:BTBr:_CDP1:cDP1f:CDP1f:cDP1r:CDP1r:cDP12f:CDP12f:cDP12r:CDP12r:_CDP2:cDP2f:CDP2f:cDP2r:CDP2r:c2BQ2:C2BQ2:c2LP0:C2LP0:c2RP0:C2RP0:_C2XP:c2LP1:c2LP2:c2RP1:c2RP2:c2LPL:c2RPL:_C2XB:c2LB1:c2LB2:c2RB1:c2RB2:c2LBL:c2RBL:_CDPx:cDP3f:CDP3f:cDP3r:CDP3r:cDP21f:CDP21f:cDP21r:CDP21r:_cDPMm:cDPMf:CDPMf:cDPMr:CDPMr:cDPmf:CDPmf:cDPmr:CDPmr:_DDP:DDP1:dDP1:DDP2:dDP2:_ea:aBQ:a2BQf:a2BQr:a2XM2:a2BM2:aBQQ:_eb:bMQ:aAaMQ:bNMQ:bNMa:bNMb:bMQQ:_eB:bIAQb:bIADb:bIDQb:_eC:cIAQf:cIADf:cIDQf:cIAQr:cIADr:cIDQr:_eE:bIAQ:cIAQ:bTINQ:cTINQ:_eQ1:cPCQ1:cPLQ1:cVQ1:gVQ1:_eQ2:cPCQ2:cPLQ2:cVQ2:cMmQ:dVQinc:_CDP1vx:cDP1v:CDP1v:cDP1w:CDP1w:cDP1x:CDP1x:_CDP2vx:cDP2v:CDP2v:cDP2w:CDP2w:cDP2x:CDP2x:_f1:CONTQ:nPF:nNFA:nAFA:nBCFA:_g1:VTI:VTD:cVQ1M:cVQ2M:cVQAM:cVQSM:_g2:gapNf:gapNr:gapSeq:gapbAD1:gapcAD1:gcAD2:gcAD3:_g3:bDPa:cDP0a:gapSa:_h1:bHap:cHap:c2Hap:_i1:vHGQ:vAC:vNLODQ:note";
-const char *const FORMAT_STRING_PER_REC_WITHOUT_SSCS = "GT:GQ:HQ:FT:FTS:_A_:DP:AD:bDP:bAD:c2DP:c2AD:_Aa:APDP:APXM:_Ab:APLRID:APLRI:APLRP:_Ac:ALRPxT:ALRIT:ALRIt:ALRPt:ALRBt:_AQ:aMQs:AMQs:a1BQf:A1BQf:a1BQr:A1BQr:_ADPf:aDPff:ADPff:aDPfr:ADPfr:_ADPr:aDPrf:ADPrf:aDPrr:ADPrr:_ALP:aLP1:ALP1:aLP2:ALP2:aLPL:ALPL:_ARP:aRP1:ARP1:aRP2:ARP2:aRPL:ARPL:_ALB:aLB1:aLB2:ALB2:aLBL:ALBL:_ARB:aRB1:aRB2:ARB2:aRBL:ARBL:_ALI:aLI1:aLI2:ALI2:aLIr:ALIr:_ARI:aRI1:aRI2:ARI2:aRIf:ARIf:_AX:aBQ2:ABQ2:aPF2:APF2:aP1:AP1:aP2:AP2:_Ax:aPF1:aLIT:aRIT:aP3:aNC:_BDP:bDPf:BDPf:bDPr:BDPr:_BT:bTAf:BTAf:bTAr:BTAr:bTBf:BTBf:bTBr:BTBr:_CDP1:cDP1f:CDP1f:cDP1r:CDP1r:cDP12f:CDP12f:cDP12r:CDP12r:_CDP2:cDP2f:CDP2f:cDP2r:CDP2r:_DDP:DDP1:dDP1:DDP2:dDP2:_ea:aBQ:a2BQf:a2BQr:a2XM2:a2BM2:aBQQ:_eb:bMQ:aAaMQ:bNMQ:bNMa:bNMb:bMQQ:_eB:bIAQb:bIADb:bIDQb:_eC:cIAQf:cIADf:cIDQf:cIAQr:cIADr:cIDQr:_eE:bIAQ:cIAQ:bTINQ:cTINQ:_eQ1:cPCQ1:cPLQ1:cVQ1:gVQ1:_eQ2:cPCQ2:cPLQ2:cVQ2:cMmQ:dVQinc:_CDP1vx:cDP1v:CDP1v:cDP1w:CDP1w:cDP1x:CDP1x:_CDP2vx:cDP2v:CDP2v:cDP2w:CDP2w:cDP2x:CDP2x:_f1:CONTQ:nPF:nNFA:nAFA:nBCFA:_g1:VTI:VTD:cVQ1M:cVQ2M:cVQAM:cVQSM:_g2:gapNf:gapNr:gapSeq:gapbAD1:gapcAD1:gcAD2:gcAD3:_g3:bDPa:cDP0a:gapSa:_h1:bHap:cHap:c2Hap:_i1:vHGQ:vAC:vNLODQ:note";
+const char *const FORMAT_STRING_PER_REC = "GT:GQ:HQ:FT:FTS:_A_:DP:AD:bDP:bAD:c2DP:c2AD:_Aa:APDP:APXM:_Ab:APLRID:APLRI:APLRP:_Ac:ALRPxT:ALRIT:ALRIt:ALRPt:ALRBt:_AQ:aMQs:AMQs:a1BQf:A1BQf:a1BQr:A1BQr:_ADPf:aDPff:ADPff:aDPfr:ADPfr:_ADPr:aDPrf:ADPrf:aDPrr:ADPrr:_ALP:aLP1:ALP1:aLP2:ALP2:aLPL:ALPL:_ARP:aRP1:ARP1:aRP2:ARP2:aRPL:ARPL:_ALB:aLB1:aLB2:ALB2:aLBL:ALBL:_ARB:aRB1:aRB2:ARB2:aRBL:ARBL:_ALI:aLI1:aLI2:ALI2:aLIr:ALIr:_ARI:aRI1:aRI2:ARI2:aRIf:ARIf:_AX:aBQ2:ABQ2:aPF2:APF2:aP1:AP1:aP2:AP2:_Ax:aPF1:aLIT:aRIT:aP3:aNC:_BDP:bDPf:bDPr:BDPb:BDPd:bTAf:bTAr:BTAb:bTBf:bTBr:BTBb:_CDP1:cDP1f:cDP1r:CDP1b:CDP1d:cDP12f:cDP12r:CDP12b:_CDP2:cDP2f:cDP2r:CDP2b:CDP2d:c2BQ2:C2BQ2:c2LP0:C2LP0:c2RP0:C2RP0:_C2XP:c2LP1:c2LP2:c2RP1:c2RP2:c2LPL:c2RPL:_C2XB:c2LB1:c2LB2:c2RB1:c2RB2:c2LBL:c2RBL:_CDPx:cDP3f:cDP3r:CDP3b:cDP21f:cDP21r:CDP21b:_cDPMm:cDPMf:cDPMr:CDPMb:cDPmf:cDPmr:CDPmb:CDPDb:cDPDf:cDPDr:_DDP:DDP1:dDP1:DDP2:dDP2:_ea:aBQ:a2BQf:a2BQr:a2XM2:a2BM2:aBQQ:_eb:bMQ:aAaMQ:bNMQ:bNMa:bNMb:bMQQ:_eB:bIAQb:bIADb:bIDQb:_eC:cIAQf:cIADf:cIDQf:cIAQr:cIADr:cIDQr:_eE:bIAQ:cIAQ:bTINQ:cTINQ:_eQ1:cPCQ1:cPLQ1:cVQ1:gVQ1:_eQ2:cPCQ2:cPLQ2:cVQ2:cMmQ:dVQinc:_CDP1vx:cDP1v:CDP1v:cDP1w:CDP1w:cDP1x:CDP1x:_CDP2vx:cDP2v:CDP2v:cDP2w:CDP2w:cDP2x:CDP2x:_f1:CONTQ:nPF:nNFA:nAFA:nBCFA:_g1:VTI:VTD:cVQ1M:cVQ2M:cVQAM:cVQSM:_g2:gapNf:gapNr:gapSeq:gapbAD1:gapcAD1:gc2AD:gc2dAD:_g3:bDPa:cDP0a:gapSa:_h1:bHap:cHap:c2Hap:_i1:vHGQ:vAC:vNLODQ:note";
+const char *const FORMAT_STRING_PER_REC_WITHOUT_SSCS = "GT:GQ:HQ:FT:FTS:_A_:DP:AD:bDP:bAD:c2DP:c2AD:_Aa:APDP:APXM:_Ab:APLRID:APLRI:APLRP:_Ac:ALRPxT:ALRIT:ALRIt:ALRPt:ALRBt:_AQ:aMQs:AMQs:a1BQf:A1BQf:a1BQr:A1BQr:_ADPf:aDPff:ADPff:aDPfr:ADPfr:_ADPr:aDPrf:ADPrf:aDPrr:ADPrr:_ALP:aLP1:ALP1:aLP2:ALP2:aLPL:ALPL:_ARP:aRP1:ARP1:aRP2:ARP2:aRPL:ARPL:_ALB:aLB1:aLB2:ALB2:aLBL:ALBL:_ARB:aRB1:aRB2:ARB2:aRBL:ARBL:_ALI:aLI1:aLI2:ALI2:aLIr:ALIr:_ARI:aRI1:aRI2:ARI2:aRIf:ARIf:_AX:aBQ2:ABQ2:aPF2:APF2:aP1:AP1:aP2:AP2:_Ax:aPF1:aLIT:aRIT:aP3:aNC:_BDP:bDPf:bDPr:BDPb:BDPd:bTAf:bTAr:BTAb:bTBf:bTBr:BTBb:_CDP1:cDP1f:cDP1r:CDP1b:CDP1d:cDP12f:cDP12r:CDP12b:_CDP2:cDP2f:cDP2r:CDP2b:CDP2d:CDPDb:cDPDf:cDPDr:_DDP:DDP1:dDP1:DDP2:dDP2:_ea:aBQ:a2BQf:a2BQr:a2XM2:a2BM2:aBQQ:_eb:bMQ:aAaMQ:bNMQ:bNMa:bNMb:bMQQ:_eB:bIAQb:bIADb:bIDQb:_eC:cIAQf:cIADf:cIDQf:cIAQr:cIADr:cIDQr:_eE:bIAQ:cIAQ:bTINQ:cTINQ:_eQ1:cPCQ1:cPLQ1:cVQ1:gVQ1:_eQ2:cPCQ2:cPLQ2:cVQ2:cMmQ:dVQinc:_CDP1vx:cDP1v:CDP1v:cDP1w:CDP1w:cDP1x:CDP1x:_CDP2vx:cDP2v:CDP2v:cDP2w:CDP2w:cDP2x:CDP2x:_f1:CONTQ:nPF:nNFA:nAFA:nBCFA:_g1:VTI:VTD:cVQ1M:cVQ2M:cVQAM:cVQSM:_g2:gapNf:gapNr:gapSeq:gapbAD1:gapcAD1:gc2AD:gc2dAD:_g3:bDPa:cDP0a:gapSa:_h1:bHap:cHap:c2Hap:_i1:vHGQ:vAC:vNLODQ:note";
 const char *const FORMAT_IDS[] = {
     "GT",
     "GQ",
@@ -464,32 +459,28 @@ const char *const FORMAT_IDS[] = {
     "aNC",
     "_BDP",
     "bDPf",
-    "BDPf",
     "bDPr",
-    "BDPr",
-    "_BT",
+    "BDPb",
+    "BDPd",
     "bTAf",
-    "BTAf",
     "bTAr",
-    "BTAr",
+    "BTAb",
     "bTBf",
-    "BTBf",
     "bTBr",
-    "BTBr",
+    "BTBb",
     "_CDP1",
     "cDP1f",
-    "CDP1f",
     "cDP1r",
-    "CDP1r",
+    "CDP1b",
+    "CDP1d",
     "cDP12f",
-    "CDP12f",
     "cDP12r",
-    "CDP12r",
+    "CDP12b",
     "_CDP2",
     "cDP2f",
-    "CDP2f",
     "cDP2r",
-    "CDP2r",
+    "CDP2b",
+    "CDP2d",
     "c2BQ2",
     "C2BQ2",
     "c2LP0",
@@ -520,22 +511,21 @@ const char *const FORMAT_IDS[] = {
     "C2RBL",
     "_CDPx",
     "cDP3f",
-    "CDP3f",
     "cDP3r",
-    "CDP3r",
+    "CDP3b",
     "cDP21f",
-    "CDP21f",
     "cDP21r",
-    "CDP21r",
+    "CDP21b",
     "_cDPMm",
     "cDPMf",
-    "CDPMf",
     "cDPMr",
-    "CDPMr",
+    "CDPMb",
     "cDPmf",
-    "CDPmf",
     "cDPmr",
-    "CDPmr",
+    "CDPmb",
+    "CDPDb",
+    "cDPDf",
+    "cDPDr",
     "_DDP",
     "DDP1",
     "dDP1",
@@ -615,8 +605,8 @@ const char *const FORMAT_IDS[] = {
     "gapSeq",
     "gapbAD1",
     "gapcAD1",
-    "gcAD2",
-    "gcAD3",
+    "gc2AD",
+    "gc2dAD",
     "_g3",
     "bDPa",
     "cDP0a",
@@ -730,32 +720,28 @@ struct BcfFormat {
     std::vector<int32_t>aNC;
     bool _BDP = false;
     std::vector<int32_t>bDPf;
-    std::array <int32_t, 2>BDPf = {{0}};
     std::vector<int32_t>bDPr;
-    std::array <int32_t, 2>BDPr = {{0}};
-    bool _BT = false;
+    std::array <int32_t, 2>BDPb = {{0}};
+    std::array <int32_t, 2>BDPd = {{0}};
     std::vector<int32_t>bTAf;
-    std::array <int32_t, 2>BTAf = {{0}};
     std::vector<int32_t>bTAr;
-    std::array <int32_t, 2>BTAr = {{0}};
+    std::array <int32_t, 2>BTAb = {{0}};
     std::vector<int32_t>bTBf;
-    std::array <int32_t, 2>BTBf = {{0}};
     std::vector<int32_t>bTBr;
-    std::array <int32_t, 2>BTBr = {{0}};
+    std::array <int32_t, 2>BTBb = {{0}};
     bool _CDP1 = false;
     std::vector<int32_t>cDP1f;
-    std::array <int32_t, 2>CDP1f = {{0}};
     std::vector<int32_t>cDP1r;
-    std::array <int32_t, 2>CDP1r = {{0}};
+    std::array <int32_t, 2>CDP1b = {{0}};
+    std::array <int32_t, 2>CDP1d = {{0}};
     std::vector<int32_t>cDP12f;
-    std::array <int32_t, 2>CDP12f = {{0}};
     std::vector<int32_t>cDP12r;
-    std::array <int32_t, 2>CDP12r = {{0}};
+    std::array <int32_t, 2>CDP12b = {{0}};
     bool _CDP2 = false;
     std::vector<int32_t>cDP2f;
-    std::array <int32_t, 2>CDP2f = {{0}};
     std::vector<int32_t>cDP2r;
-    std::array <int32_t, 2>CDP2r = {{0}};
+    std::array <int32_t, 2>CDP2b = {{0}};
+    std::array <int32_t, 2>CDP2d = {{0}};
     std::vector<int32_t>c2BQ2;
     std::array <int32_t, 2>C2BQ2 = {{0}};
     std::vector<int32_t>c2LP0;
@@ -786,22 +772,21 @@ struct BcfFormat {
     std::array <int64_t, 2>C2RBL = {{0}};
     bool _CDPx = false;
     std::vector<int32_t>cDP3f;
-    std::array <int32_t, 2>CDP3f = {{0}};
     std::vector<int32_t>cDP3r;
-    std::array <int32_t, 2>CDP3r = {{0}};
+    std::array <int32_t, 2>CDP3b = {{0}};
     std::vector<int32_t>cDP21f;
-    std::array <int32_t, 2>CDP21f = {{0}};
     std::vector<int32_t>cDP21r;
-    std::array <int32_t, 2>CDP21r = {{0}};
+    std::array <int32_t, 2>CDP21b = {{0}};
     bool _cDPMm = false;
     std::vector<int32_t>cDPMf;
-    std::array <int32_t, 2>CDPMf = {{0}};
     std::vector<int32_t>cDPMr;
-    std::array <int32_t, 2>CDPMr = {{0}};
+    std::array <int32_t, 2>CDPMb = {{0}};
     std::vector<int32_t>cDPmf;
-    std::array <int32_t, 2>CDPmf = {{0}};
     std::vector<int32_t>cDPmr;
-    std::array <int32_t, 2>CDPmr = {{0}};
+    std::array <int32_t, 2>CDPmb = {{0}};
+    std::array <int32_t, 2>CDPDb = {{0}};
+    std::vector<int32_t>cDPDf;
+    std::vector<int32_t>cDPDr;
     bool _DDP = false;
     std::array <int32_t, 2>DDP1 = {{0}};
     std::vector<int32_t>dDP1;
@@ -881,8 +866,8 @@ struct BcfFormat {
     std::vector<std::string>gapSeq;
     std::vector<int32_t>gapbAD1;
     std::vector<int32_t>gapcAD1;
-    std::vector<int32_t>gcAD2;
-    std::vector<int32_t>gcAD3;
+    std::vector<int32_t>gc2AD;
+    std::vector<int32_t>gc2dAD;
     bool _g3 = false;
     std::vector<int32_t>bDPa;
     std::vector<int32_t>cDP0a;
@@ -1575,13 +1560,6 @@ if (true) {
 }
 if (true) {
     outstring += ":";;
-    for (unsigned int i = 0; i < 2; i++) {
-        if (0 != i) { outstring += ","; }; outstring += std::to_string(fmt.BDPf[i]);
-    };
-
-}
-if (true) {
-    outstring += ":";;
     if (fmt.bDPr.size() == 0) { outstring += "."; }
     for (unsigned int i = 0; i <  fmt.bDPr.size(); i++) {
         if (0 != i) { outstring += ","; }; outstring += std::to_string(fmt.bDPr[i]);
@@ -1591,13 +1569,15 @@ if (true) {
 if (true) {
     outstring += ":";;
     for (unsigned int i = 0; i < 2; i++) {
-        if (0 != i) { outstring += ","; }; outstring += std::to_string(fmt.BDPr[i]);
+        if (0 != i) { outstring += ","; }; outstring += std::to_string(fmt.BDPb[i]);
     };
 
 }
 if (true) {
     outstring += ":";;
-    outstring += std::string(FORMAT_IDS[100]) + "";
+    for (unsigned int i = 0; i < 2; i++) {
+        if (0 != i) { outstring += ","; }; outstring += std::to_string(fmt.BDPd[i]);
+    };
 
 }
 if (true) {
@@ -1605,13 +1585,6 @@ if (true) {
     if (fmt.bTAf.size() == 0) { outstring += "."; }
     for (unsigned int i = 0; i <  fmt.bTAf.size(); i++) {
         if (0 != i) { outstring += ","; }; outstring += std::to_string(fmt.bTAf[i]);
-    };
-
-}
-if (true) {
-    outstring += ":";;
-    for (unsigned int i = 0; i < 1; i++) {
-        if (0 != i) { outstring += ","; }; outstring += std::to_string(fmt.BTAf[i]);
     };
 
 }
@@ -1625,8 +1598,8 @@ if (true) {
 }
 if (true) {
     outstring += ":";;
-    for (unsigned int i = 0; i < 1; i++) {
-        if (0 != i) { outstring += ","; }; outstring += std::to_string(fmt.BTAr[i]);
+    for (unsigned int i = 0; i < 2; i++) {
+        if (0 != i) { outstring += ","; }; outstring += std::to_string(fmt.BTAb[i]);
     };
 
 }
@@ -1640,13 +1613,6 @@ if (true) {
 }
 if (true) {
     outstring += ":";;
-    for (unsigned int i = 0; i < 1; i++) {
-        if (0 != i) { outstring += ","; }; outstring += std::to_string(fmt.BTBf[i]);
-    };
-
-}
-if (true) {
-    outstring += ":";;
     if (fmt.bTBr.size() == 0) { outstring += "."; }
     for (unsigned int i = 0; i <  fmt.bTBr.size(); i++) {
         if (0 != i) { outstring += ","; }; outstring += std::to_string(fmt.bTBr[i]);
@@ -1655,14 +1621,14 @@ if (true) {
 }
 if (true) {
     outstring += ":";;
-    for (unsigned int i = 0; i < 1; i++) {
-        if (0 != i) { outstring += ","; }; outstring += std::to_string(fmt.BTBr[i]);
+    for (unsigned int i = 0; i < 2; i++) {
+        if (0 != i) { outstring += ","; }; outstring += std::to_string(fmt.BTBb[i]);
     };
 
 }
 if (true) {
     outstring += ":";;
-    outstring += std::string(FORMAT_IDS[109]) + "";
+    outstring += std::string(FORMAT_IDS[106]) + "";
 
 }
 if (true) {
@@ -1670,13 +1636,6 @@ if (true) {
     if (fmt.cDP1f.size() == 0) { outstring += "."; }
     for (unsigned int i = 0; i <  fmt.cDP1f.size(); i++) {
         if (0 != i) { outstring += ","; }; outstring += std::to_string(fmt.cDP1f[i]);
-    };
-
-}
-if (true) {
-    outstring += ":";;
-    for (unsigned int i = 0; i < 2; i++) {
-        if (0 != i) { outstring += ","; }; outstring += std::to_string(fmt.CDP1f[i]);
     };
 
 }
@@ -1691,7 +1650,14 @@ if (true) {
 if (true) {
     outstring += ":";;
     for (unsigned int i = 0; i < 2; i++) {
-        if (0 != i) { outstring += ","; }; outstring += std::to_string(fmt.CDP1r[i]);
+        if (0 != i) { outstring += ","; }; outstring += std::to_string(fmt.CDP1b[i]);
+    };
+
+}
+if (true) {
+    outstring += ":";;
+    for (unsigned int i = 0; i < 2; i++) {
+        if (0 != i) { outstring += ","; }; outstring += std::to_string(fmt.CDP1d[i]);
     };
 
 }
@@ -1700,13 +1666,6 @@ if (true) {
     if (fmt.cDP12f.size() == 0) { outstring += "."; }
     for (unsigned int i = 0; i <  fmt.cDP12f.size(); i++) {
         if (0 != i) { outstring += ","; }; outstring += std::to_string(fmt.cDP12f[i]);
-    };
-
-}
-if (true) {
-    outstring += ":";;
-    for (unsigned int i = 0; i < 2; i++) {
-        if (0 != i) { outstring += ","; }; outstring += std::to_string(fmt.CDP12f[i]);
     };
 
 }
@@ -1721,13 +1680,13 @@ if (true) {
 if (true) {
     outstring += ":";;
     for (unsigned int i = 0; i < 2; i++) {
-        if (0 != i) { outstring += ","; }; outstring += std::to_string(fmt.CDP12r[i]);
+        if (0 != i) { outstring += ","; }; outstring += std::to_string(fmt.CDP12b[i]);
     };
 
 }
 if (true) {
     outstring += ":";;
-    outstring += std::string(FORMAT_IDS[118]) + "";
+    outstring += std::string(FORMAT_IDS[114]) + "";
 
 }
 if (true) {
@@ -1735,13 +1694,6 @@ if (true) {
     if (fmt.cDP2f.size() == 0) { outstring += "."; }
     for (unsigned int i = 0; i <  fmt.cDP2f.size(); i++) {
         if (0 != i) { outstring += ","; }; outstring += std::to_string(fmt.cDP2f[i]);
-    };
-
-}
-if (true) {
-    outstring += ":";;
-    for (unsigned int i = 0; i < 2; i++) {
-        if (0 != i) { outstring += ","; }; outstring += std::to_string(fmt.CDP2f[i]);
     };
 
 }
@@ -1756,7 +1708,14 @@ if (true) {
 if (true) {
     outstring += ":";;
     for (unsigned int i = 0; i < 2; i++) {
-        if (0 != i) { outstring += ","; }; outstring += std::to_string(fmt.CDP2r[i]);
+        if (0 != i) { outstring += ","; }; outstring += std::to_string(fmt.CDP2b[i]);
+    };
+
+}
+if (true) {
+    outstring += ":";;
+    for (unsigned int i = 0; i < 2; i++) {
+        if (0 != i) { outstring += ","; }; outstring += std::to_string(fmt.CDP2d[i]);
     };
 
 }
@@ -1807,7 +1766,7 @@ if (fmt.enable_tier2_consensus_format_tags) {
 }
 if (fmt.enable_tier2_consensus_format_tags) {
     outstring += ":";;
-    outstring += std::string(FORMAT_IDS[129]) + "";
+    outstring += std::string(FORMAT_IDS[125]) + "";
 
 }
 if (fmt.enable_tier2_consensus_format_tags) {
@@ -1864,7 +1823,7 @@ if (fmt.enable_tier2_consensus_format_tags) {
 /* The FORMAT/TAG C2RPL is skipped */
 if (fmt.enable_tier2_consensus_format_tags) {
     outstring += ":";;
-    outstring += std::string(FORMAT_IDS[140]) + "";
+    outstring += std::string(FORMAT_IDS[136]) + "";
 
 }
 if (fmt.enable_tier2_consensus_format_tags) {
@@ -1921,7 +1880,7 @@ if (fmt.enable_tier2_consensus_format_tags) {
 /* The FORMAT/TAG C2RBL is skipped */
 if (fmt.enable_tier2_consensus_format_tags) {
     outstring += ":";;
-    outstring += std::string(FORMAT_IDS[151]) + "";
+    outstring += std::string(FORMAT_IDS[147]) + "";
 
 }
 if (fmt.enable_tier2_consensus_format_tags) {
@@ -1929,13 +1888,6 @@ if (fmt.enable_tier2_consensus_format_tags) {
     if (fmt.cDP3f.size() == 0) { outstring += "."; }
     for (unsigned int i = 0; i <  fmt.cDP3f.size(); i++) {
         if (0 != i) { outstring += ","; }; outstring += std::to_string(fmt.cDP3f[i]);
-    };
-
-}
-if (fmt.enable_tier2_consensus_format_tags) {
-    outstring += ":";;
-    for (unsigned int i = 0; i < 1; i++) {
-        if (0 != i) { outstring += ","; }; outstring += std::to_string(fmt.CDP3f[i]);
     };
 
 }
@@ -1949,8 +1901,8 @@ if (fmt.enable_tier2_consensus_format_tags) {
 }
 if (fmt.enable_tier2_consensus_format_tags) {
     outstring += ":";;
-    for (unsigned int i = 0; i < 1; i++) {
-        if (0 != i) { outstring += ","; }; outstring += std::to_string(fmt.CDP3r[i]);
+    for (unsigned int i = 0; i < 2; i++) {
+        if (0 != i) { outstring += ","; }; outstring += std::to_string(fmt.CDP3b[i]);
     };
 
 }
@@ -1964,13 +1916,6 @@ if (fmt.enable_tier2_consensus_format_tags) {
 }
 if (fmt.enable_tier2_consensus_format_tags) {
     outstring += ":";;
-    for (unsigned int i = 0; i < 1; i++) {
-        if (0 != i) { outstring += ","; }; outstring += std::to_string(fmt.CDP21f[i]);
-    };
-
-}
-if (fmt.enable_tier2_consensus_format_tags) {
-    outstring += ":";;
     if (fmt.cDP21r.size() == 0) { outstring += "."; }
     for (unsigned int i = 0; i <  fmt.cDP21r.size(); i++) {
         if (0 != i) { outstring += ","; }; outstring += std::to_string(fmt.cDP21r[i]);
@@ -1979,14 +1924,14 @@ if (fmt.enable_tier2_consensus_format_tags) {
 }
 if (fmt.enable_tier2_consensus_format_tags) {
     outstring += ":";;
-    for (unsigned int i = 0; i < 1; i++) {
-        if (0 != i) { outstring += ","; }; outstring += std::to_string(fmt.CDP21r[i]);
+    for (unsigned int i = 0; i < 2; i++) {
+        if (0 != i) { outstring += ","; }; outstring += std::to_string(fmt.CDP21b[i]);
     };
 
 }
 if (fmt.enable_tier2_consensus_format_tags) {
     outstring += ":";;
-    outstring += std::string(FORMAT_IDS[160]) + "";
+    outstring += std::string(FORMAT_IDS[154]) + "";
 
 }
 if (fmt.enable_tier2_consensus_format_tags) {
@@ -1994,13 +1939,6 @@ if (fmt.enable_tier2_consensus_format_tags) {
     if (fmt.cDPMf.size() == 0) { outstring += "."; }
     for (unsigned int i = 0; i <  fmt.cDPMf.size(); i++) {
         if (0 != i) { outstring += ","; }; outstring += std::to_string(fmt.cDPMf[i]);
-    };
-
-}
-if (fmt.enable_tier2_consensus_format_tags) {
-    outstring += ":";;
-    for (unsigned int i = 0; i < 1; i++) {
-        if (0 != i) { outstring += ","; }; outstring += std::to_string(fmt.CDPMf[i]);
     };
 
 }
@@ -2014,8 +1952,8 @@ if (fmt.enable_tier2_consensus_format_tags) {
 }
 if (fmt.enable_tier2_consensus_format_tags) {
     outstring += ":";;
-    for (unsigned int i = 0; i < 1; i++) {
-        if (0 != i) { outstring += ","; }; outstring += std::to_string(fmt.CDPMr[i]);
+    for (unsigned int i = 0; i < 2; i++) {
+        if (0 != i) { outstring += ","; }; outstring += std::to_string(fmt.CDPMb[i]);
     };
 
 }
@@ -2029,13 +1967,6 @@ if (fmt.enable_tier2_consensus_format_tags) {
 }
 if (fmt.enable_tier2_consensus_format_tags) {
     outstring += ":";;
-    for (unsigned int i = 0; i < 1; i++) {
-        if (0 != i) { outstring += ","; }; outstring += std::to_string(fmt.CDPmf[i]);
-    };
-
-}
-if (fmt.enable_tier2_consensus_format_tags) {
-    outstring += ":";;
     if (fmt.cDPmr.size() == 0) { outstring += "."; }
     for (unsigned int i = 0; i <  fmt.cDPmr.size(); i++) {
         if (0 != i) { outstring += ","; }; outstring += std::to_string(fmt.cDPmr[i]);
@@ -2044,14 +1975,37 @@ if (fmt.enable_tier2_consensus_format_tags) {
 }
 if (fmt.enable_tier2_consensus_format_tags) {
     outstring += ":";;
-    for (unsigned int i = 0; i < 1; i++) {
-        if (0 != i) { outstring += ","; }; outstring += std::to_string(fmt.CDPmr[i]);
+    for (unsigned int i = 0; i < 2; i++) {
+        if (0 != i) { outstring += ","; }; outstring += std::to_string(fmt.CDPmb[i]);
     };
 
 }
 if (true) {
     outstring += ":";;
-    outstring += std::string(FORMAT_IDS[169]) + "";
+    for (unsigned int i = 0; i < 2; i++) {
+        if (0 != i) { outstring += ","; }; outstring += std::to_string(fmt.CDPDb[i]);
+    };
+
+}
+if (true) {
+    outstring += ":";;
+    if (fmt.cDPDf.size() == 0) { outstring += "."; }
+    for (unsigned int i = 0; i <  fmt.cDPDf.size(); i++) {
+        if (0 != i) { outstring += ","; }; outstring += std::to_string(fmt.cDPDf[i]);
+    };
+
+}
+if (true) {
+    outstring += ":";;
+    if (fmt.cDPDr.size() == 0) { outstring += "."; }
+    for (unsigned int i = 0; i <  fmt.cDPDr.size(); i++) {
+        if (0 != i) { outstring += ","; }; outstring += std::to_string(fmt.cDPDr[i]);
+    };
+
+}
+if (true) {
+    outstring += ":";;
+    outstring += std::string(FORMAT_IDS[164]) + "";
 
 }
 if (true) {
@@ -2086,7 +2040,7 @@ if (true) {
 }
 if (true) {
     outstring += ":";;
-    outstring += std::string(FORMAT_IDS[174]) + "";
+    outstring += std::string(FORMAT_IDS[169]) + "";
 
 }
 if (true) {
@@ -2139,7 +2093,7 @@ if (true) {
 }
 if (true) {
     outstring += ":";;
-    outstring += std::string(FORMAT_IDS[181]) + "";
+    outstring += std::string(FORMAT_IDS[176]) + "";
 
 }
 if (true) {
@@ -2192,7 +2146,7 @@ if (true) {
 }
 if (true) {
     outstring += ":";;
-    outstring += std::string(FORMAT_IDS[188]) + "";
+    outstring += std::string(FORMAT_IDS[183]) + "";
 
 }
 if (true) {
@@ -2221,7 +2175,7 @@ if (true) {
 }
 if (true) {
     outstring += ":";;
-    outstring += std::string(FORMAT_IDS[192]) + "";
+    outstring += std::string(FORMAT_IDS[187]) + "";
 
 }
 if (true) {
@@ -2274,7 +2228,7 @@ if (true) {
 }
 if (true) {
     outstring += ":";;
-    outstring += std::string(FORMAT_IDS[199]) + "";
+    outstring += std::string(FORMAT_IDS[194]) + "";
 
 }
 if (true) {
@@ -2311,7 +2265,7 @@ if (true) {
 }
 if (true) {
     outstring += ":";;
-    outstring += std::string(FORMAT_IDS[204]) + "";
+    outstring += std::string(FORMAT_IDS[199]) + "";
 
 }
 if (true) {
@@ -2348,7 +2302,7 @@ if (true) {
 }
 if (true) {
     outstring += ":";;
-    outstring += std::string(FORMAT_IDS[209]) + "";
+    outstring += std::string(FORMAT_IDS[204]) + "";
 
 }
 if (true) {
@@ -2393,7 +2347,7 @@ if (true) {
 }
 if (true) {
     outstring += ":";;
-    outstring += std::string(FORMAT_IDS[215]) + "";
+    outstring += std::string(FORMAT_IDS[210]) + "";
 
 }
 if (true) {
@@ -2443,7 +2397,7 @@ if (true) {
 }
 if (true) {
     outstring += ":";;
-    outstring += std::string(FORMAT_IDS[222]) + "";
+    outstring += std::string(FORMAT_IDS[217]) + "";
 
 }
 if (true) {
@@ -2493,7 +2447,7 @@ if (true) {
 }
 if (true) {
     outstring += ":";;
-    outstring += std::string(FORMAT_IDS[229]) + "";
+    outstring += std::string(FORMAT_IDS[224]) + "";
 
 }
 if (true) {
@@ -2538,7 +2492,7 @@ if (true) {
 }
 if (true) {
     outstring += ":";;
-    outstring += std::string(FORMAT_IDS[235]) + "";
+    outstring += std::string(FORMAT_IDS[230]) + "";
 
 }
 if (true) {
@@ -2587,7 +2541,7 @@ if (true) {
 }
 if (true) {
     outstring += ":";;
-    outstring += std::string(FORMAT_IDS[242]) + "";
+    outstring += std::string(FORMAT_IDS[237]) + "";
 
 }
 if (true) {
@@ -2632,23 +2586,23 @@ if (true) {
 }
 if (true) {
     outstring += ":";;
-    if (fmt.gcAD2.size() == 0) { outstring += "."; }
-    for (unsigned int i = 0; i <  fmt.gcAD2.size(); i++) {
-        if (0 != i) { outstring += ","; }; outstring += std::to_string(fmt.gcAD2[i]);
+    if (fmt.gc2AD.size() == 0) { outstring += "."; }
+    for (unsigned int i = 0; i <  fmt.gc2AD.size(); i++) {
+        if (0 != i) { outstring += ","; }; outstring += std::to_string(fmt.gc2AD[i]);
     };
 
 }
 if (true) {
     outstring += ":";;
-    if (fmt.gcAD3.size() == 0) { outstring += "."; }
-    for (unsigned int i = 0; i <  fmt.gcAD3.size(); i++) {
-        if (0 != i) { outstring += ","; }; outstring += std::to_string(fmt.gcAD3[i]);
+    if (fmt.gc2dAD.size() == 0) { outstring += "."; }
+    for (unsigned int i = 0; i <  fmt.gc2dAD.size(); i++) {
+        if (0 != i) { outstring += ","; }; outstring += std::to_string(fmt.gc2dAD[i]);
     };
 
 }
 if (true) {
     outstring += ":";;
-    outstring += std::string(FORMAT_IDS[250]) + "";
+    outstring += std::string(FORMAT_IDS[245]) + "";
 
 }
 if (true) {
@@ -2677,7 +2631,7 @@ if (true) {
 }
 if (true) {
     outstring += ":";;
-    outstring += std::string(FORMAT_IDS[254]) + "";
+    outstring += std::string(FORMAT_IDS[249]) + "";
 
 }
 if (true) {
@@ -2700,7 +2654,7 @@ if (true) {
 }
 if (true) {
     outstring += ":";;
-    outstring += std::string(FORMAT_IDS[258]) + "";
+    outstring += std::string(FORMAT_IDS[253]) + "";
 
 }
 if (true) {
@@ -2740,8 +2694,8 @@ static int resetBcfFormatD(BcfFormat & fmt) {
     fmt.gapSeq.clear();
     fmt.gapbAD1.clear();
     fmt.gapcAD1.clear();
-    fmt.gcAD2.clear();
-    fmt.gcAD3.clear();
+    fmt.gc2AD.clear();
+    fmt.gc2dAD.clear();
 
     return 0;};
 static int streamFrontPushBcfFormatR(BcfFormat & dst, const BcfFormat & src) {
@@ -3105,6 +3059,16 @@ static int streamFrontPushBcfFormatR(BcfFormat & dst, const BcfFormat & src) {
     auto cDPmr_tmp = dst.cDPmr[0];
     dst.cDPmr[0] = src.cDPmr[0];
     dst.cDPmr.push_back(cDPmr_tmp);
+    assert(dst.cDPDf.size() == 1 || !fprintf(stderr, "%lu == 1 failed for cDPDf", dst.cDPDf.size() ) );
+    assert(src.cDPDf.size() == 1 || !fprintf(stderr, "%lu == 1 failed for cDPDf", src.cDPDf.size() ) );
+    auto cDPDf_tmp = dst.cDPDf[0];
+    dst.cDPDf[0] = src.cDPDf[0];
+    dst.cDPDf.push_back(cDPDf_tmp);
+    assert(dst.cDPDr.size() == 1 || !fprintf(stderr, "%lu == 1 failed for cDPDr", dst.cDPDr.size() ) );
+    assert(src.cDPDr.size() == 1 || !fprintf(stderr, "%lu == 1 failed for cDPDr", src.cDPDr.size() ) );
+    auto cDPDr_tmp = dst.cDPDr[0];
+    dst.cDPDr[0] = src.cDPDr[0];
+    dst.cDPDr.push_back(cDPDr_tmp);
     assert(dst.dDP1.size() == 1 || !fprintf(stderr, "%lu == 1 failed for dDP1", dst.dDP1.size() ) );
     assert(src.dDP1.size() == 1 || !fprintf(stderr, "%lu == 1 failed for dDP1", src.dDP1.size() ) );
     auto dDP1_tmp = dst.dDP1[0];
@@ -3349,8 +3313,8 @@ static int streamFrontPushBcfFormatR(BcfFormat & dst, const BcfFormat & src) {
     return 0;};
 const char *const FORMAT_LINES[] = {
     "##FORMAT=<ID=GT,Number=1,Type=String,Description=\"Genotype (for tumor cells, this is only a guess)\">",
-    "##FORMAT=<ID=GQ,Number=1,Type=Integer,Description=\"Genotype Quality\">",
-    "##FORMAT=<ID=HQ,Number=2,Type=Integer,Description=\"Haplotype Quality\">",
+    "##FORMAT=<ID=GQ,Number=1,Type=Integer,Description=\"Genotype Quality. \">",
+    "##FORMAT=<ID=HQ,Number=2,Type=Integer,Description=\"Haplotype Quality. \">",
     "##FORMAT=<ID=FT,Number=1,Type=String,Description=\"Sample genotype filter indicating if this genotype was 'called' (similar in concept to the FILTER field). Again, use PASS to indicate that all filters have been passed, a semi-colon separated list of codes for filters that fail, or ‘.’ to indicate that filters have not been applied. These values should be described in the meta-information in the same way as FILTERs (String, no white-space or semi-colons permitted)\">",
     "##FORMAT=<ID=FTS,Number=A,Type=String,Description=\"Sample variant filter indicating if this variant was 'called' (similar in concept to the FILTER field). Again, use PASS to indicate that all filters have been passed, a vertical bar (|)-separated list of codes for filters that fail, or '.' to indicate that filters have not been applied. These values should be described in the meta-information in the same way as FILTERs. No white-space, semi-colons, or vertical bar (|) permitted. \">",
     "##FORMAT=<ID=_A_,Number=1,Type=String,Description=\"SUB-HEADER: Summary statistics. \">",
@@ -3373,7 +3337,7 @@ const char *const FORMAT_LINES[] = {
     "##FORMAT=<ID=ALRIt,Number=4,Type=Integer,Description=\"Number of bases to left (1,2) and right (3,4) insert ends below which there is tier-1 and tier-2 insert bias. \">",
     "##FORMAT=<ID=ALRPt,Number=4,Type=Integer,Description=\"Number of bases to left (1,2) and right (3,4) read-segment ends below which there is tier-1 and tier-2 position bias. \">",
     "##FORMAT=<ID=ALRBt,Number=4,Type=Integer,Description=\"Base alignment quality (BAQ) to left (1,2) and right (3,4) read-segment ends below which there is tier-1 and tier-2 position bias. \">",
-    "##FORMAT=<ID=_AQ,Number=1,Type=String,Description=\"SUB-HEADER: Sum of qualities (For FORMAT/TAG with '_A', '_B', '_C', or '_D' in the above SUB-HEADER, the TAG values are for REF/ALT if Number=R (i.e., starting with ABCD), all alleles by sum if Number=1 (i.e., starting with abcd), and all-alleles by sum/the padded deletion allele if Number=2 (i.e., starting with abcd)). \">",
+    "##FORMAT=<ID=_AQ,Number=1,Type=String,Description=\"SUB-HEADER: Sum of qualities (For FORMAT/TAG with the prefixes '_A', '_B', '_C', or '_D' in the SUB-HEADER without checking whether the first letter is in upper or lower case, the TAG values are for REF/ALT if Number=R (i.e., starting with the letter A, B, C or D), all alleles by sum if Number=1 (i.e., starting with the letter a, b, c or d), and all-alleles by sum/the padded deletion allele if Number=2 (i.e., starting with a, b, c or d)). The f, r, and b letter suffixes mean forward, reverse, and both directions, respectively. \">",
     "##FORMAT=<ID=aMQs,Number=R,Type=Integer,Description=\"Raw sequencing segment sum of mapping qualities for the REF and ALT alleles. \">",
     "##FORMAT=<ID=AMQs,Number=1,Type=Integer,Description=\"Raw sequencing segment sum of mapping qualities for all alleles by sum and the padded deletion. \">",
     "##FORMAT=<ID=a1BQf,Number=R,Type=Integer,Description=\"Raw sequencing-segment sum of base quality on the forward strand. \">",
@@ -3445,32 +3409,28 @@ const char *const FORMAT_LINES[] = {
     "##FORMAT=<ID=aNC,Number=R,Type=Integer,Description=\"Raw sequencing segment depth of reads that do not have any clips (including soft and hard clips). \">",
     "##FORMAT=<ID=_BDP,Number=1,Type=String,Description=\"SUB-HEADER: Non-de-duplicated fragment depth for all alleles by sum and the padded deletion allele. \">",
     "##FORMAT=<ID=bDPf,Number=R,Type=Integer,Description=\"See BDPf. \">",
-    "##FORMAT=<ID=BDPf,Number=2,Type=Integer,Description=\"Non-de-duplicated fragment depth on the forward strand for all alleles by sum and the padded deletion allele. \">",
     "##FORMAT=<ID=bDPr,Number=R,Type=Integer,Description=\"See BDPr. \">",
-    "##FORMAT=<ID=BDPr,Number=2,Type=Integer,Description=\"Non-de-duplicated fragment depth on the reverse strand for all alleles by sum and the padded deletion allele. \">",
-    "##FORMAT=<ID=_BT,Number=1,Type=String,Description=\"SUB-HEADER: Non-de-duplicated fragment depth for all alleles by sum and the padded deletion allele. \">",
+    "##FORMAT=<ID=BDPb,Number=2,Type=Integer,Description=\"Non-de-duplicated fragment depth on the forward and reverse strands for all alleles by sum. \">",
+    "##FORMAT=<ID=BDPd,Number=2,Type=Integer,Description=\"Non-de-duplicated fragment depth on the forward and reverse strands for the padded deletion allele. \">",
     "##FORMAT=<ID=bTAf,Number=R,Type=Integer,Description=\"See BTAf. \">",
-    "##FORMAT=<ID=BTAf,Number=1,Type=Integer,Description=\"Non-de-duplicated sum of sequenced fragment positions on the forward strand for all alleles by sum. \">",
     "##FORMAT=<ID=bTAr,Number=R,Type=Integer,Description=\"See BTAr. \">",
-    "##FORMAT=<ID=BTAr,Number=1,Type=Integer,Description=\"Non-de-duplicated sum of sequenced fragment positions on the reverse strand for all alleles by sum. \">",
+    "##FORMAT=<ID=BTAb,Number=2,Type=Integer,Description=\"Non-de-duplicated sum of sequenced fragment positions on the forward and reverse strands for all alleles by sum. \">",
     "##FORMAT=<ID=bTBf,Number=R,Type=Integer,Description=\"See BTBf. \">",
-    "##FORMAT=<ID=BTBf,Number=1,Type=Integer,Description=\"Non-de-duplicated sum of sequenced fragment positions near mutations on the forward strand for all alleles by sum. \">",
     "##FORMAT=<ID=bTBr,Number=R,Type=Integer,Description=\"See BTBr. \">",
-    "##FORMAT=<ID=BTBr,Number=1,Type=Integer,Description=\"Non-de-duplicated sum of sequenced fragment positions near mutations on the reverse strand for all alleles by sum. \">",
+    "##FORMAT=<ID=BTBb,Number=2,Type=Integer,Description=\"Non-de-duplicated sum of sequenced fragment positions near mutations on the forward and reverse strands for all alleles by sum. \">",
     "##FORMAT=<ID=_CDP1,Number=1,Type=String,Description=\"SUB-HEADER: De-duplicated depths of the unique molecular fragments for all alleles by sum and the padded deletion allele. \">",
     "##FORMAT=<ID=cDP1f,Number=R,Type=Integer,Description=\"Non-filtered de-duplicated depth of the unique molecular fragments on the forward read orientation. \">",
-    "##FORMAT=<ID=CDP1f,Number=2,Type=Integer,Description=\"Non-filtered de-duplicated depth of the unique molecular fragments on the forward read orientation. \">",
     "##FORMAT=<ID=cDP1r,Number=R,Type=Integer,Description=\"Non-filtered de-duplicated depth of the unique molecular fragments on the reverse read orientation. \">",
-    "##FORMAT=<ID=CDP1r,Number=2,Type=Integer,Description=\"Non-filtered de-duplicated depth of the unique molecular fragments on the reverse read orientation. \">",
+    "##FORMAT=<ID=CDP1b,Number=2,Type=Integer,Description=\"Non-filtered de-duplicated depth of the unique molecular fragments on the forward and reverse read orientations for all alleles by sum. \">",
+    "##FORMAT=<ID=CDP1d,Number=2,Type=Integer,Description=\"Non-filtered de-duplicated depth of the unique molecular fragments on the forward and reverse read orientations for the padded deletion allele. \">",
     "##FORMAT=<ID=cDP12f,Number=R,Type=Integer,Description=\"BQ-filtered de-duplicated depth of the unique molecular fragments on the forward read orientation. \">",
-    "##FORMAT=<ID=CDP12f,Number=2,Type=Integer,Description=\"BQ-filtered de-duplicated depth of the unique molecular fragments on the forward read orientation . \">",
     "##FORMAT=<ID=cDP12r,Number=R,Type=Integer,Description=\"BQ-filtered de-duplicated depth of the unique molecular fragments on the reverse read orientation. \">",
-    "##FORMAT=<ID=CDP12r,Number=2,Type=Integer,Description=\"BQ-Filtered de-duplicated depth of the unique molecular fragments on the reverse read orientation. \">",
+    "##FORMAT=<ID=CDP12b,Number=2,Type=Integer,Description=\"BQ-Filtered de-duplicated depth of the unique molecular fragments on the forward and reverse read orientations. \">",
     "##FORMAT=<ID=_CDP2,Number=1,Type=String,Description=\"SUB-HEADER: Tier-2 single-strand consensus sequence (SSCS) depth. \">",
     "##FORMAT=<ID=cDP2f,Number=R,Type=Integer,Description=\"SSCS depth on the forward read orientation for each allele. \">",
-    "##FORMAT=<ID=CDP2f,Number=2,Type=Integer,Description=\"SSCS depth on the forward read orientation for all alleles by sum. \">",
     "##FORMAT=<ID=cDP2r,Number=R,Type=Integer,Description=\"SSCS depth on the reverse read orientation for each allele. \">",
-    "##FORMAT=<ID=CDP2r,Number=2,Type=Integer,Description=\"SSCS depth on the reverse read orientation for all alleles by sum. \">",
+    "##FORMAT=<ID=CDP2b,Number=2,Type=Integer,Description=\"SSCS depth on the forward and reverse read orientations for all alleles by sum. \">",
+    "##FORMAT=<ID=CDP2d,Number=2,Type=Integer,Description=\"SSCS depth on the forward and reverse read orientations for the padded deletion allele. \">",
     "##FORMAT=<ID=c2BQ2,Number=R,Type=Integer,Description=\"SSCS depth unaffected by tier-2 base quality bias. \">",
     "##FORMAT=<ID=C2BQ2,Number=1,Type=Integer,Description=\"SSCS depth unaffected by tier-2 base quality bias. \">",
     "##FORMAT=<ID=c2LP0,Number=R,Type=Integer,Description=\"SSCS depth unaffected by strictly defined no-prior left-side position bias. \">",
@@ -3501,22 +3461,21 @@ const char *const FORMAT_LINES[] = {
     "##FORMAT=<ID=C2RBL,Number=1,Type=Integer,Description=\"Raw summed BAQ (base-alignment quality) to the left-side of tier-2 SSCS. \">",
     "##FORMAT=<ID=_CDPx,Number=1,Type=String,Description=\"SUB-HEADER: Other extra tags extracted from single-strand consensus sequences (SSCSs) derived by UMI molecular-barcode families. \">",
     "##FORMAT=<ID=cDP3f,Number=R,Type=Integer,Description=\"Strong SSCS depth on the forward read orientation for each allele. \">",
-    "##FORMAT=<ID=CDP3f,Number=1,Type=Integer,Description=\"Strong SSCS depth on the forward read orientation for all alleles by sum. \">",
-    "##FORMAT=<ID=cDP3r,Number=R,Type=Integer,Description=\"Strong SSCS depth on the reverse read orientation for each allele\">",
-    "##FORMAT=<ID=CDP3r,Number=1,Type=Integer,Description=\"Strong SSCS depth on the reverse read orientation for all alleles by sum. \">",
+    "##FORMAT=<ID=cDP3r,Number=R,Type=Integer,Description=\"Strong SSCS depth on the reverse read orientation for each allele. \">",
+    "##FORMAT=<ID=CDP3b,Number=2,Type=Integer,Description=\"Strong SSCS depth on the forward and reverse read orientations for all alleles by sum. \">",
     "##FORMAT=<ID=cDP21f,Number=R,Type=Integer,Description=\"SSCS singleton on the forward read orientation. \">",
-    "##FORMAT=<ID=CDP21f,Number=1,Type=Integer,Description=\"SSCS singleton on the forward read orientation for all alleles by sum. \">",
     "##FORMAT=<ID=cDP21r,Number=R,Type=Integer,Description=\"SSCS singleton on the reverse read orientation. \">",
-    "##FORMAT=<ID=CDP21r,Number=1,Type=Integer,Description=\"SSCS singleton on the reverse read orientation for all alleles by sum. \">",
+    "##FORMAT=<ID=CDP21b,Number=2,Type=Integer,Description=\"SSCS singleton on the forward and reverse read orientations for all alleles by sum. \">",
     "##FORMAT=<ID=_cDPMm,Number=1,Type=String,Description=\"SUB-HEADER: Empirical PCR-fragment (with dups) error in SSCS UMI-families used to estimate base-call-like qualities. \">",
     "##FORMAT=<ID=cDPMf,Number=R,Type=Integer,Description=\"Depth of PCR fragments supporting the UMI-consensus allele on the forward read orientation for each allele. \">",
-    "##FORMAT=<ID=CDPMf,Number=1,Type=Integer,Description=\"Depth of PCR fragments supporting the UMI-consensus allele on the forward read orientation for all alleles by sum. \">",
     "##FORMAT=<ID=cDPMr,Number=R,Type=Integer,Description=\"Depth of PCR fragments supporting the UMI-consensus allele on the reverse read orientation for each allele. \">",
-    "##FORMAT=<ID=CDPMr,Number=1,Type=Integer,Description=\"Depth of PCR fragments supporting the UMI-consensus allele on the reverse read orientation for all alleles by sum. \">",
+    "##FORMAT=<ID=CDPMb,Number=2,Type=Integer,Description=\"Depth of PCR fragments supporting the UMI-consensus allele on the forward and reverse read orientations for all alleles by sum. \">",
     "##FORMAT=<ID=cDPmf,Number=R,Type=Integer,Description=\"Depth of PCR fragments not supporting the UMI-consensus allele on the forward read orientation for each allele. \">",
-    "##FORMAT=<ID=CDPmf,Number=1,Type=Integer,Description=\"Depth of PCR fragments not supporting the UMI-consensus allele on the forward read orientation for all alleles by sum. \">",
     "##FORMAT=<ID=cDPmr,Number=R,Type=Integer,Description=\"Depth of PCR fragments not supporting the UMI-consensus allele on the reverse read orientation for each allele. \">",
-    "##FORMAT=<ID=CDPmr,Number=1,Type=Integer,Description=\"Depth of PCR fragments not supporting the UMI-consensus allele on the reberse read orientation for all alleles by sum. \">",
+    "##FORMAT=<ID=CDPmb,Number=2,Type=Integer,Description=\"Depth of PCR fragments not supporting the UMI-consensus allele on the forward and reverse read orientations for all alleles by sum. \">",
+    "##FORMAT=<ID=CDPDb,Number=2,Type=Integer,Description=\"DSCS-excluded SSCS depths on the forward and reverse read orientations for all alleles by sum. \">",
+    "##FORMAT=<ID=cDPDf,Number=R,Type=Integer,Description=\"DSCS-excluded SSCS depth on the forward read orientation. \">",
+    "##FORMAT=<ID=cDPDr,Number=R,Type=Integer,Description=\"DSCS-excluded SSCS depth on the reverse read orientation. \">",
     "##FORMAT=<ID=_DDP,Number=1,Type=String,Description=\"SUB-HEADER: Duplex consensus sequence (DCS, or double-strand consensus sequence (DSCS)) depths from the original double-stranded input molecule. \">",
     "##FORMAT=<ID=DDP1,Number=2,Type=Integer,Description=\"DCS depth regardless of allele agreement on the two strands for all alleles by sum and the padded deletion allele. \">",
     "##FORMAT=<ID=dDP1,Number=R,Type=Integer,Description=\"DCS depth regardless of allele agreement on the two strands for each allele. \">",
@@ -3585,23 +3544,23 @@ const char *const FORMAT_LINES[] = {
     "##FORMAT=<ID=nBCFA,Number=.,Type=Integer,Description=\"DeciPhred allele fractions computed with duped and de-duplicated depths, using duped depth, de-duplicated depth, tier-2 consensus family depth, tier-3 consensus family depth, tier-1 read-orientation depth, and tier-2 read-orientation depth, respectively. \">",
     "##FORMAT=<ID=_g1,Number=1,Type=String,Description=\"SUB-HEADER: General variant-related information. \">",
     "##FORMAT=<ID=VTI,Number=R,Type=Integer,Description=\"Variant-type ID of each allele. \">",
-    "##FORMAT=<ID=VTD,Number=R,Type=String,Description=\"Variant-type description of each allele\">",
-    "##FORMAT=<ID=cVQ1M,Number=2,Type=Integer,Description=\"Consensus allele qualities for de-duplicated fragments and UMI families\">",
-    "##FORMAT=<ID=cVQ2M,Number=2,Type=Integer,Description=\"Consensus allele qualities for de-duplicated fragments and UMI families\">",
-    "##FORMAT=<ID=cVQAM,Number=2,Type=String,Description=\"Consensus allele symbolic descriptions for de-duplicated fragments and UMI families\">",
-    "##FORMAT=<ID=cVQSM,Number=2,Type=String,Description=\"Consensus allele InDel strings for de-duplicated fragments and UMI families\">",
+    "##FORMAT=<ID=VTD,Number=R,Type=String,Description=\"Variant-type description of each allele. \">",
+    "##FORMAT=<ID=cVQ1M,Number=2,Type=Integer,Description=\"Consensus allele qualities for de-duplicated fragments and UMI families. \">",
+    "##FORMAT=<ID=cVQ2M,Number=2,Type=Integer,Description=\"Consensus allele qualities for de-duplicated fragments and UMI families. \">",
+    "##FORMAT=<ID=cVQAM,Number=2,Type=String,Description=\"Consensus allele symbolic descriptions for de-duplicated fragments and UMI families. \">",
+    "##FORMAT=<ID=cVQSM,Number=2,Type=String,Description=\"Consensus allele InDel strings for de-duplicated fragments and UMI families. \">",
     "##FORMAT=<ID=_g2,Number=1,Type=String,Description=\"SUB-HEADER: Gap-related information for all observed InDel signals. \">",
     "##FORMAT=<ID=gapNf,Number=.,Type=Integer,Description=\"Number of InDel sequences on the forward read orientation. \">",
     "##FORMAT=<ID=gapNr,Number=.,Type=Integer,Description=\"Number of InDel sequences on the reverse read orientation. \">",
-    "##FORMAT=<ID=gapSeq,Number=.,Type=String,Description=\"InDel sequences\">",
-    "##FORMAT=<ID=gapbAD1,Number=.,Type=Integer,Description=\"Duped read count of each gapSeq\">",
-    "##FORMAT=<ID=gapcAD1,Number=.,Type=Integer,Description=\"De-duplicated read count of each gapSeq\">",
-    "##FORMAT=<ID=gcAD2,Number=.,Type=Integer,Description=\"De-duplicated read count of each gapSeq using tier-2 consensus\">",
-    "##FORMAT=<ID=gcAD3,Number=.,Type=Integer,Description=\"De-duplicated read count of each gapSeq using tier-3 consensus\">",
+    "##FORMAT=<ID=gapSeq,Number=.,Type=String,Description=\"InDel sequences. \">",
+    "##FORMAT=<ID=gapbAD1,Number=.,Type=Integer,Description=\"Duped read count of each gapSeq. \">",
+    "##FORMAT=<ID=gapcAD1,Number=.,Type=Integer,Description=\"De-duplicated read count of each gapSeq. \">",
+    "##FORMAT=<ID=gc2AD,Number=.,Type=Integer,Description=\"De-duplicated read count of each gapSeq using tier-2 consensus (by default, 0.8 is the consensus allele proportion in family and 2 is the family size). \">",
+    "##FORMAT=<ID=gc2dAD,Number=.,Type=Integer,Description=\"De-duplicated read count of each gapSeq using tier-2 consensus with rescue by duplex consensus sequence (DCS) or double-strand consensus sequence (DSC), meaning that alpha-beta singleton and beta-alpha singleton are counted as two units of evidence in support of the allele instead of being rejected. \">",
     "##FORMAT=<ID=_g3,Number=1,Type=String,Description=\"SUB-HEADER: Gap-related information for each InDel allele. \">",
     "##FORMAT=<ID=bDPa,Number=R,Type=Integer,Description=\"Number of non-de-duplicated fragments supporting each ALT allele which is more precise for InDels. \">",
-    "##FORMAT=<ID=cDP0a,Number=R,Type=Integer,Description=\"Number of de-duplicated fragments supporting each ALT allele which is more precise for InDels\">",
-    "##FORMAT=<ID=gapSa,Number=R,Type=String,Description=\"InDel string of each allele\">",
+    "##FORMAT=<ID=cDP0a,Number=R,Type=Integer,Description=\"Number of de-duplicated fragments supporting each ALT allele which is more precise for InDels. \">",
+    "##FORMAT=<ID=gapSa,Number=R,Type=String,Description=\"InDel string of each allele. \">",
     "##FORMAT=<ID=_h1,Number=1,Type=String,Description=\"SUB-HEADER: Haplotype-related information. \">",
     "##FORMAT=<ID=bHap,Number=1,Type=String,Description=\"Duped forward&reverse linkage in the format of ((position&variantType)...forwardHAD&reverseHAD[forwardTotalHAD,reverseTotalHAD])... where HAD is the haplotype allele depth and where ()... means more elements following the format in the preceding parenthesis. \">",
     "##FORMAT=<ID=cHap,Number=1,Type=String,Description=\"Same as bHap except that duplicated reads are counted only once (dedupped). \">",
@@ -3610,7 +3569,7 @@ const char *const FORMAT_LINES[] = {
     "##FORMAT=<ID=vHGQ,Number=1,Type=Integer,Description=\"Phred-scaled odds of observing the allele distribution at this genomic position assuming all alleles were generated by germline events (higher means less likely). \">",
     "##FORMAT=<ID=vAC,Number=2,Type=Integer,Description=\"Number of SNVs and InDels that passed their variant quality thresholds at this position. This field can be used to filter out multiallelic variants or to merge alleles at the same position. \">",
     "##FORMAT=<ID=vNLODQ,Number=2,Type=Integer,Description=\"Number of SNVs and InDels that passed their variant quality thresholds at this position. This field can be used to filter out SNV-in-tumor with InDel-in-normal or InDel-in-tumor with SNV-in-normal at the same position. \">",
-    "##FORMAT=<ID=note,Number=1,Type=String,Description=\"Additional note as comment for the given variant\">",
+    "##FORMAT=<ID=note,Number=1,Type=String,Description=\"Additional note as comment for the given variant. \">",
 };
 };
 #endif
