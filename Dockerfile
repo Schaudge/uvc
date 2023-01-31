@@ -19,7 +19,8 @@ RUN cd /opt && tar zxvf htslib-1.16.tar.gz \
 RUN mkdir /opt/CLI11-1.7.1
 COPY CLI11-1.7.1/CLI11.hpp /opt/CLI11-1.7.1/
 
-COPY Makefile gitdiff.txt version.h bin/uvcTN.sh *.hpp *.cpp /opt/
+COPY gitdiff.txt version.h bin/uvcTN.sh *.hpp *.cpp /opt/
+COPY Makefile.Dockerfile /opt/Makefile
 
 RUN cd /opt && make && mv /opt/uvc-1-fopenmp-thread /opt/uvc1
 
