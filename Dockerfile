@@ -24,3 +24,9 @@ COPY Makefile.Dockerfile /opt/Makefile
 
 RUN cd /opt && make && mv /opt/uvc-1-fopenmp-thread /opt/uvc1
 
+COPY integrate_haplotype_variation.cpp /opt/
+
+RUN cd /opt && g++ -std=c++14 -Wall -Wno-unused-variable -fconcepts -o haplotype -I htslib-1.16 \
+    -DNDEBUG -DCOMMIT_VERSION=\"latest\" -DCOMMIT_DIFF_SH=\"Schaudge\" -DCOMMIT_DIFF_FULL=\"\" \
+    integrate_haplotype_variation.cpp htslib-1.16/libhts.a -pthread -lm -lz -lbz2 -llzma -lcurl
+
