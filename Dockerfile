@@ -16,6 +16,11 @@ COPY ext/htslib-1.16.tar.gz /opt/
 RUN cd /opt && tar zxvf htslib-1.16.tar.gz \
     && cd htslib-1.16 && ./configure && make
 
+COPY ext/bcftools-1.16.tar.gz /opt/
+
+RUN cd /opt && tar zxvf bcftools-1.16.tar.gz \
+    && cd bcftools-1.16 && ./configure && make install
+
 RUN mkdir /opt/CLI11-1.7.1
 COPY CLI11-1.7.1/CLI11.hpp /opt/CLI11-1.7.1/
 

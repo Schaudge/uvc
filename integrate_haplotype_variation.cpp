@@ -224,7 +224,8 @@ vecof_pos_ref_alt_tup_split(const std::vector<std::tuple<int, std::string, std::
             vecof_vecof_pos_ref_alt_tup.push_back(std::vector<std::tuple<int, std::string, std::string, VariantInfo>>());
         }
         prev_link_n_bases = link_n_bases;
-        prev_pos = std::get<0>(pos_ref_alt_begpos_endpos_tuple) + (int)MAX(std::get<1>(pos_ref_alt_begpos_endpos_tuple).size(), std::get<2>(pos_ref_alt_begpos_endpos_tuple).size());
+        // previous position does not consider insertion size, modified by Schaudge King
+        prev_pos = std::get<0>(pos_ref_alt_begpos_endpos_tuple) + (int)std::get<1>(pos_ref_alt_begpos_endpos_tuple).size();
         prev_varlen = varlen;
         nextof_prev = std::get<4>(pos_ref_alt_begpos_endpos_tuple);
         vecof_vecof_pos_ref_alt_tup.back().push_back(
