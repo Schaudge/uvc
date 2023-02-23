@@ -52,12 +52,6 @@ uvc-3-ubsan.debug : $(HDR) $(SRC) $(DEP)
 uvc-4.debug : $(HDR) $(SRC) $(DEP)
 	$(CXX) -O0 -g -p    -o uvc-4.debug                      $(CXXFLAGS) $(VERFLAGS) $(SRC) $(HTSFLAGS) $(DEBUG_OPTS) -Wextra -DENABLE_ASSERT_IN_UVC
 
-bcf_formats_generator1.out : bcf_formats_generator1.cpp version.h 
-	$(CXX) -o bcf_formats_generator1.out $(CXXFLAGS) bcf_formats_generator1.cpp
-
-bcf_formats.step1.hpp : bcf_formats_generator1.out
-	./bcf_formats_generator1.out > bcf_formats.step1.hpp # auto-generate the C++ code from the BCF-template generator
-
 .PHONY: release all debug debug-ub ALL clean deploy
 
 clean:

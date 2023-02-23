@@ -24,7 +24,13 @@ RUN cd /opt && tar zxvf bcftools-1.16.tar.gz \
 RUN mkdir /opt/CLI11-1.7.1
 COPY CLI11-1.7.1/CLI11.hpp /opt/CLI11-1.7.1/
 
-COPY gitdiff.txt version.h bin/uvcTN.sh *.hpp *.cpp /opt/
+COPY gitdiff.txt bin/uvcTN.sh version.h bcf_formats.step1.hpp \
+     common.hpp Hash.hpp iohts.hpp main_consensus.hpp main.hpp \
+     CmdLineArgs.hpp grouping.hpp instcode.hpp logging.hpp \
+     main_conversion.hpp MolecularID.hpp main.cpp \
+     CmdLineArgs.cpp common.cpp grouping.cpp \
+     iohts.cpp logging.cpp MolecularID.cpp \
+     uvcActiveRegion.cpp version.cpp /opt/
 COPY Makefile.Dockerfile /opt/Makefile
 
 RUN cd /opt && make && mv /opt/uvc-1-fopenmp-thread /opt/uvc1

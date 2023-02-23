@@ -448,7 +448,11 @@ int main(int argc, char **argv) {
     bcf_hdr_append(bcf_hdr, "##INFO=<ID=diCVQ,Number=A,BCF_TYPE_INTEGER,Description=\"Combined (by combining SNVs and InDels) variant Quality of each delins ALT variant. \">");
     bcf_hdr_append(bcf_hdr, "##INFO=<ID=diHVQ,Number=A,BCF_TYPE_INTEGER,Description=\"Haplotyped (non-SNV and non-InDel small) variant Quality of each delins ALT variant. \">");
     */
-    
+    int nsamples = bcf_hdr_nsamples(bcf_hdr);
+    int sampleidx = nsamples - 1; // last sample
+
+    bcf_hdr_append(bcf_hdr, ("##tumor_sample=" + std::string(bcf_hdr->samples[sampleidx])).c_str());
+    bcf_hdr_append(bcf_hdr, (std::string("##delinsVariantDate=") + timestring).c_str());
     bcf_hdr_append(bcf_hdr, (std::string("##delinsVariantDate=") + timestring).c_str());
     bcf_hdr_append(bcf_hdr, "##delinsVariantCallerVersion=" COMMIT_VERSION "(" COMMIT_DIFF_SH ")");
     std::string vcfcmd = "##delinsVariantCallerCommand=";
@@ -458,9 +462,11 @@ int main(int argc, char **argv) {
     bcf_hdr_append(bcf_hdr, vcfcmd.c_str());
 
     bcf_hdr_t *bcf_hdr2 = bcf_hdr_dup(bcf_hdr);
-    // int set_samples_ret = bcf_hdr_set_samples(bcf_hdr, bcf_hdr->samples[bcf_hdr->nsamples_ori - 1], false);
-    int set_samples_ret1 = bcf_hdr_set_samples(bcf_hdr2, NULL, false);
+    int set_samples_ret = bcf_hdr_set_samples(bcf_hdr2, bcf_hdr->samples[sampleidx], false);
+    //int set_samples_ret1 = bcf_hdr_set_samples(bcf_hdr2, NULL, false);
     assert(0 == set_samples_ret1);
+    int append_dp_ret = bcf_hdr_append(bcf_hdr2, "##FORMAT=<ID=mhDP,Number=1,Type=Integer,Description=\"minimum fragment depth of variants from same haplotype. \">");
+    assert(0 == append_dp_ret);
     kstring_t hdr_str = {0, 0, NULL};
     bcf_hdr_format(bcf_hdr2, true, &hdr_str);
     std::cout << hdr_str.s;
@@ -538,9 +544,6 @@ int main(int argc, char **argv) {
         int32_t *bcfints = NULL;
         
         std::map<std::string, std::vector<std::tuple<int, std::string, std::string, int, int, VariantInfo>>> map_from_cHap_string_to_vecof_pos_ref_alt_begpos_endpos_tup;
-        
-        int nsamples = bcf_hdr_nsamples(bcf_hdr); 
-        int sampleidx = nsamples - 1; // last sample
         
         while (bcf_sr_next_line(sr)) {
             bcf1_t *line = bcf_sr_get_line(sr, 0);
@@ -819,7 +822,7 @@ int main(int argc, char **argv) {
                             << "\t.\t" << cv_ref 
                             << "\t" << cv_alt 
                             << "\t" << std::to_string(varqual) 
-                            << "\t.\t" // FILTER
+                            << "\thaplotype\t" // FILTER
                             <<        BCF_INFO_LIST[delinsHap].ID << "=" << cHap_string 
                             << ";" << BCF_INFO_LIST[diPRA].ID     << "="
                                 << (std::get<0>(pos_ref_alt_tup_from_vcfline)) << "_"
@@ -835,7 +838,7 @@ int main(int argc, char **argv) {
                             << ";" << BCF_INFO_LIST[diAD2F].ID   << "=" << (tADRmin[1] * 100 / MAX(1, tADRmax[1]))
                             << ";" << BCF_INFO_LIST[diHVQ].ID    << "=" << hv_qual
                             << ";" << BCF_INFO_LIST[diCVQ].ID    << "=" << cv_qual
-                            << "\n";
+                            << "\tDP:mhDP\t" << tDPmax << ":" << tDPmin << "\n";
                         // fprintf(stderr, "Generating the variant %s\n", oss.str().c_str());
                         std::tuple<double, std::string> var_record = std::make_tuple(varqual, oss.str());
                         /*

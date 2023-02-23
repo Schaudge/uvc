@@ -7,11 +7,12 @@
 #include<vector>
 #include<assert.h>
 namespace bcfrec {
-static const unsigned int FILTER_NUM = 28;
+static const unsigned int FILTER_NUM = 29;
 enum FILTER_ENUM {
     noVar,
     upstreamDel,
     s50,
+    haplotype,
     Q10,
     Q20,
     Q30,
@@ -41,6 +42,7 @@ enum FILTER_ENUM {
 const char *const FILTER_IDS[] = {
     "noVar",
     "upstreamDel",
+    "haplotype",
     "s50",
     "Q10",
     "Q20",
@@ -72,6 +74,7 @@ const char *const FILTER_LINES[] = {
     "##FILTER=<ID=noVar,Description=\"Not a variant (for example, when REF and ALT are the same), but still included to get all statistics. \">",
     "##FILTER=<ID=upstreamDel,Description=\"Deletion extended from another upstream deletion. \">",
     "##FILTER=<ID=s50,Description=\"Less than 50% of samples have data. \">",
+    "##FILTER=<ID=haplotype,Description=\"Combined haplotype from multiple small variants. \">",
     "##FILTER=<ID=Q10,Description=\"Quality below 10 and no other filters. \">",
     "##FILTER=<ID=Q20,Description=\"Quality below 20 and no other filters. \">",
     "##FILTER=<ID=Q30,Description=\"Quality below 30 and no other filters. \">",
