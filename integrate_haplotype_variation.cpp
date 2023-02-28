@@ -312,7 +312,8 @@ void help(int argc, char **argv) {
     fprintf(stderr, " -M mode for the output VCF file containing simple variants that are entirely parts of some delins variant [default to %s].\n", DEFAULT_M);
     fprintf(stderr, " -O from BWA: gap opening for the maximum number of bases between InDel and SNV/InDel to be considered as linked [default to %d].\n", DEFAULT_CO);
     fprintf(stderr, " -T the bed file that overrides the -d, -f, -B -O, and -E parameters in the defined regions [default to None].\n");
-    
+
+    fprintf(stderr, " -k boolean flag indicating if keep all these uncombined haplotype variations into stdout. [default to false].\n");
     fprintf(stderr, " -I boolean flag indicating if the generation of delins variants is not required for the elimination of simple variants. [default to false].\n");
     fprintf(stderr, " -L boolean flag indicating if left-trimming of bases occurring in both REF and ALT should be disabled [default to false].\n");
     fprintf(stderr, " -R boolean flag indicating if right-trimming of bases occurring in both REF and ALT should be disabled [default to false].\n");
@@ -351,6 +352,7 @@ int main(int argc, char **argv) {
     int defaultCB1 = DEFAULT_CB;
     int defaultCO1 = DEFAULT_CO;
     int defaultCE1 = DEFAULT_CE;
+    bool keep_uncombined_stdout = false;
     bool disable_is_part_of_delinsvar_3tups_check = false;
     bool enable_short_tandem_repeat_adjust = false;
     bool disable_left_trim = false;
@@ -361,7 +363,7 @@ int main(int argc, char **argv) {
     const char *non_delins_outvcfname = NULL;
     const char *defaultMode = DEFAULT_M;
     int opt = -1;
-    while ((opt = getopt(argc, argv, "2:3:b:c:d:f:p:A:B:C:D:E:M:H:O:T:ILRShv")) != -1) {
+    while ((opt = getopt(argc, argv, "2:3:b:c:d:f:kp:A:B:C:D:E:M:H:O:T:ILRShv")) != -1) {
         switch (opt) {
             case 'b': defaultB = atoi(optarg); break;
             case 'c': defaultC = atof(optarg); break; // delins2simple_var_frac_above_which_discard_simple 
@@ -381,7 +383,8 @@ int main(int argc, char **argv) {
             case 'H': defaultH1 = optarg; break;
             case 'O': defaultCO1 = atoi(optarg); break;
             case 'T': bedfile = optarg; break;
-            
+
+            case 'k': keep_uncombined_stdout = true; break;
             case 'I': disable_is_part_of_delinsvar_3tups_check = true; break;
             case 'L': disable_left_trim = true; break;
             case 'R': disable_right_trim = true; break;
@@ -401,7 +404,7 @@ int main(int argc, char **argv) {
     }
     
     faidx_t *faidx = fai_load(fastaref);
-    htsFile *fp = vcf_open(uvcvcf, "r");
+    htsFile *fp = bcf_open(uvcvcf, "r");
     bcf_hdr_t *bcf_hdr = vcf_hdr_read(fp);
     
     for (const auto bcf_info : BCF_INFO_LIST) {
@@ -462,19 +465,21 @@ int main(int argc, char **argv) {
     bcf_hdr_append(bcf_hdr, vcfcmd.c_str());
 
     bcf_hdr_t *bcf_hdr2 = bcf_hdr_dup(bcf_hdr);
-    int set_samples_ret = bcf_hdr_set_samples(bcf_hdr2, bcf_hdr->samples[sampleidx], false);
+    //int set_samples_ret = bcf_hdr_set_samples(bcf_hdr2, bcf_hdr->samples[sampleidx], false);
     //int set_samples_ret1 = bcf_hdr_set_samples(bcf_hdr2, NULL, false);
-    assert(0 == set_samples_ret1);
+    //assert(0 == set_samples_ret);
     int append_dp_ret = bcf_hdr_append(bcf_hdr2, "##FORMAT=<ID=mhDP,Number=1,Type=Integer,Description=\"minimum fragment depth of variants from same haplotype. \">");
     assert(0 == append_dp_ret);
     kstring_t hdr_str = {0, 0, NULL};
     bcf_hdr_format(bcf_hdr2, true, &hdr_str);
     std::cout << hdr_str.s;
+    ks_free(&hdr_str);
     bcf_hdr_destroy(bcf_hdr2);
     // int set_samples_ret2 = bcf_hdr_set_samples(bcf_hdr, "-", false);
     // assert(0 == set_samples_ret2);
-    htsFile *simple_outvcf = ((NULL == simple_outvcfname) ? NULL : vcf_open(simple_outvcfname, (defaultMode)));
-    htsFile *non_delins_outvcf = ((NULL == non_delins_outvcfname) ? NULL : vcf_open(non_delins_outvcfname, (defaultMode)));
+    htsFile *simple_outvcf = ((NULL == simple_outvcfname) ? NULL : bcf_open(simple_outvcfname, (defaultMode)));
+    htsFile *non_delins_outvcf = ((NULL == non_delins_outvcfname) ? NULL : bcf_open(non_delins_outvcfname, (defaultMode)));
+    htsFile *stdout_vcf = keep_uncombined_stdout ? bcf_open("-", defaultMode) : NULL;
     
     if (NULL != simple_outvcf) {
         int vcf_hdr_write_ret = vcf_hdr_write(simple_outvcf, bcf_hdr);
@@ -555,7 +560,7 @@ int main(int argc, char **argv) {
             if (valsize < 6) { continue; }
             const int posleft = bcfints[0];
             const int posright = bcfints[3] + (bcfints[4] * bcfints[5]);
-            
+
             if (bcfstring) {
                 free(bcfstring[0]);
                 free(bcfstring);
@@ -580,7 +585,7 @@ int main(int argc, char **argv) {
                 }
             }
         }
-        
+
         bcf_sr_seek(sr, tname, 0);
         std::cerr << "Will finish processing tname " << tname << "\n";
         // std::set<std::tuple<int, std::string, std::string>> delinsvar_3tups;
@@ -832,13 +837,13 @@ int main(int argc, char **argv) {
                             << ";" << BCF_INFO_LIST[diDPm].ID    << "=" << tDPmin
                             << ";" << BCF_INFO_LIST[diDPM].ID    << "=" << tDPmax
                             << ";" << BCF_INFO_LIST[diADm].ID    << "=" << tADRmin[1]
-                            << ";" << BCF_INFO_LIST[diADM].ID    << "=" << tADRmax[1] 
-                            << ";" << BCF_INFO_LIST[diRDm].ID    << "=" << tADRmin[0] 
+                            << ";" << BCF_INFO_LIST[diADM].ID    << "=" << tADRmax[1]
+                            << ";" << BCF_INFO_LIST[diRDm].ID    << "=" << tADRmin[0]
                             << ";" << BCF_INFO_LIST[diRDM].ID    << "=" << tADRmax[0]
                             << ";" << BCF_INFO_LIST[diAD2F].ID   << "=" << (tADRmin[1] * 100 / MAX(1, tADRmax[1]))
                             << ";" << BCF_INFO_LIST[diHVQ].ID    << "=" << hv_qual
                             << ";" << BCF_INFO_LIST[diCVQ].ID    << "=" << cv_qual
-                            << "\tDP:mhDP\t" << tDPmax << ":" << tDPmin << "\n";
+                            << "\tDP:mhDP\t" << (nsamples == 2 ? ".:.\t" : "") << tDPmax << ":" << tDPmin;
                         // fprintf(stderr, "Generating the variant %s\n", oss.str().c_str());
                         std::tuple<double, std::string> var_record = std::make_tuple(varqual, oss.str());
                         /*
@@ -860,7 +865,8 @@ int main(int argc, char **argv) {
                         delinsvar_pos_ref_alt_to_vq_vline[delinsvar_3tup] = var_record;
                         is_part_of_delinsvar_3tups = true;
                         while (delinsvar_pos_ref_alt_to_vq_vline.size() > defaultB) {
-                            std::cout << std::get<1>(delinsvar_pos_ref_alt_to_vq_vline.begin()->second);
+                            if (stdout_vcf != NULL && keep_uncombined_stdout) bcf_flush(stdout_vcf);
+                            std::cout << std::get<1>(delinsvar_pos_ref_alt_to_vq_vline.begin()->second) << std::endl;
                             delinsvar_pos_ref_alt_to_vq_vline.erase(delinsvar_pos_ref_alt_to_vq_vline.begin());
                         }
                     }
@@ -872,36 +878,54 @@ int main(int argc, char **argv) {
                         && (is_part_of_delinsvar_3tups || disable_is_part_of_delinsvar_3tups_check)
                         && are_all_vars_delins) { 
                     // is mostly part of a delins variant
-                    int vcf_write_ret = vcf_write(simple_outvcf, bcf_hdr, line);
+                    int vcf_write_ret = bcf_write(simple_outvcf, bcf_hdr, line);
                     assert(vcf_write_ret >= 0);
                 }
                 if ((non_delins_outvcf != NULL) && (
                         (!is_part_of_delinsvar_3tups)
                         || (!are_all_vars_delins))) {
                     // is not mostly part of a delins variant
-                    int vcf_write_ret = vcf_write(non_delins_outvcf, bcf_hdr, line);
+                    int vcf_write_ret = bcf_write(non_delins_outvcf, bcf_hdr, line);
+                    assert(vcf_write_ret >= 0 || !fprintf(stderr, "The VCF record at tid-pos-ref-alt %d %ld %s %s\n", line->rid, line->pos, line->d.allele[0], line->d.allele[1]));
+                }
+                if (stdout_vcf != NULL && keep_uncombined_stdout &&
+                        ((!is_part_of_delinsvar_3tups) || (!are_all_vars_delins))) {
+                    int vcf_write_ret = bcf_write(stdout_vcf, bcf_hdr, line);
                     assert(vcf_write_ret >= 0 || !fprintf(stderr, "The VCF record at tid-pos-ref-alt %d %ld %s %s\n", line->rid, line->pos, line->d.allele[0], line->d.allele[1]));
                 }
             }
+            // memory leak, free AD ints and bcf format string
+            if (bcfstring) {
+                free(bcfstring[0]);
+                free(bcfstring);
+                bcfstring = NULL;
+            }
         }
         for (const auto & vq_vline : delinsvar_pos_ref_alt_to_vq_vline) {
-            std::cout << std::get<1>(vq_vline.second);
+            if (stdout_vcf != NULL && keep_uncombined_stdout) bcf_flush(stdout_vcf);
+            std::cout << std::get<1>(vq_vline.second) << std::endl;
         }
+        free(bcfints);
         bcf_sr_destroy(sr);
     }
-    if (NULL != bedfile) { 
+    free(seqnames);
+    if (NULL != bedfile) {
         bedstream.close(); 
     }
     if (NULL != simple_outvcf) {
-        int vcf_close_ret = vcf_close(simple_outvcf);
+        int vcf_close_ret = bcf_close(simple_outvcf);
         assert (vcf_close_ret == 0);
     }
     if (NULL != non_delins_outvcf) {
-        int vcf_close_ret = vcf_close(non_delins_outvcf);
+        int vcf_close_ret = bcf_close(non_delins_outvcf);
+        assert (vcf_close_ret == 0);
+    }
+    if (NULL != stdout_vcf) {
+        int vcf_close_ret = bcf_close(stdout_vcf);
         assert (vcf_close_ret == 0);
     }
     bcf_hdr_destroy(bcf_hdr);
-    vcf_close(fp);
+    bcf_close(fp);
     fai_destroy(faidx);
 
     std::clock_t c_end = std::clock();
