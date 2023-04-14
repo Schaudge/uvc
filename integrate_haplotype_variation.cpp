@@ -220,7 +220,7 @@ vecof_pos_ref_alt_tup_split(const std::vector<std::tuple<int, std::string, std::
         }
         UPDATE_MAX(delim_pos, prev_pos + MAX(link_n_bases, prev_link_n_bases));
         int curr_pos = std::get<0>(pos_ref_alt_begpos_endpos_tuple);
-        if (curr_pos >= delim_pos && ((!enable_short_tandem_repeat_adjust) || nextof_prev <= prevof_curr)) {
+        if (curr_pos > delim_pos && ((!enable_short_tandem_repeat_adjust) || nextof_prev <= prevof_curr)) {
             vecof_vecof_pos_ref_alt_tup.push_back(std::vector<std::tuple<int, std::string, std::string, VariantInfo>>());
         }
         prev_link_n_bases = link_n_bases;

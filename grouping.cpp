@@ -70,7 +70,7 @@ int
 SamIter::target_region_to_contigs(
         std::vector<BedLine> & bedlines,
         const std::string & tier1_target_region, 
-        const bam_hdr_t *bam_hdr) {
+        const bam_hdr_t *bam_hdr, int32_t region_padding_size) const {
     std::map<std::string, uvc1_refgpos_t> tname_to_tid;
     for (uvc1_refgpos_t i = 0; i < bam_hdr->n_targets; i++) {
         tname_to_tid[bam_hdr->target_name[i]] = i;
@@ -90,8 +90,9 @@ SamIter::target_region_to_contigs(
                     << "(template usually denotes chromosome). ";
             exit(16);
         } else {
-            uvc1_refgpos_t tbeg = (uvc1_refgpos_t)tbeg1;
-            uvc1_refgpos_t tend = (uvc1_refgpos_t)tend1;
+            // padding the bed region for special requirement, add by Schaudge King
+            auto tbeg = (uvc1_refgpos_t) (tbeg1 > region_padding_size ? tbeg1 - region_padding_size : 0);
+            auto tend = (uvc1_refgpos_t) (region_padding_size > 0 ? tend1 + region_padding_size : tend1);
             uvc1_flag_t bedline_flag = 0x0;
             uvc1_readnum_big_t nreads = ((-1 == bed_in_avg_sequencing_DP) ? 0 : (bed_in_avg_sequencing_DP * (tend - tbeg) + 1));
             if (tname_to_tid.find(tname) == tname_to_tid.end()) {
@@ -110,7 +111,7 @@ int
 SamIter::bed_fname_to_contigs(
         std::vector<BedLine> & bedlines,
         const std::string & bed_fname, 
-        const bam_hdr_t *bam_hdr) {
+        const bam_hdr_t *bam_hdr, int32_t region_padding_size) const {
     
     std::map<std::string, uvc1_refgpos_t> tname_to_tid;
     for (uvc1_refgpos_t i = 0; i < bam_hdr->n_targets; i++) {
@@ -130,6 +131,9 @@ SamIter::bed_fname_to_contigs(
         linestream >> tname;
         linestream >> tbeg;
         linestream >> tend;
+        // padding the bed region for special requirement, add by Schaudge King
+        tbeg = tbeg > region_padding_size ? tbeg - region_padding_size : 0;
+        if (region_padding_size > 0) tend += region_padding_size;
         if (!(tbeg < tend)) {
             std::cerr << "The bedfile " << bed_fname << " does not have its end after its start at: " << tname << "\t" << tbeg << "\t" << tend;
             exit (16);

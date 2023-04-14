@@ -74,14 +74,14 @@ struct SamIter {
                 fprintf(stderr, "Failed to load the region %s in the indexed file %s!", tier1_target_region.c_str(), input_bam_fname.c_str());
                 abort();
             }
-            target_region_to_contigs(this->_bedlines, this->tier1_target_region, this->samheader);
+            target_region_to_contigs(this->_bedlines, this->tier1_target_region, this->samheader, paramset.region_padding_size);
         } else if (IS_PROVIDED(this->region_bed_fname)) {
             this->sam_idx = sam_index_load(this->sam_infile, input_bam_fname.c_str());
             if (NULL == this->sam_idx) {
                 fprintf(stderr, "Failed to load the index for the file %s!", input_bam_fname.c_str());
                 abort();
             }
-            bed_fname_to_contigs(this->_bedlines, this->region_bed_fname, this->samheader); 
+            bed_fname_to_contigs(this->_bedlines, this->region_bed_fname, this->samheader, paramset.region_padding_size);
         }
     }
     ~SamIter() {
@@ -96,13 +96,15 @@ struct SamIter {
     bed_fname_to_contigs(
             std::vector<BedLine> & bedlines,
             const std::string & bed_fname, 
-            const bam_hdr_t *bam_hdr);
+            const bam_hdr_t *bam_hdr,
+            int32_t region_padding_size) const;
 
     int
     target_region_to_contigs(
             std::vector<BedLine> & bedlines,
             const std::string & tier1_target_region,
-            const bam_hdr_t *bam_hdr);
+            const bam_hdr_t *bam_hdr,
+            int32_t region_padding_size) const;
     
     int64_t
     iternext(

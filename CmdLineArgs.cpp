@@ -238,7 +238,12 @@ CommandLineArgs::initFromArgCV(int & parsing_result_flag, int argc, const char *
         "-s,--sample", 
            sample_name, 
         "Sample name which is optional. ");
-    
+
+    ADD_OPTDEF(app,
+               "--padding-size",
+               region_padding_size,
+               "Size of genomic range to be padding for each target region. ");
+
     ADD_OPTDEF(app, 
         "-t,--threads", 
            max_cpu_num, 

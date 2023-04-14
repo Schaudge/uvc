@@ -29,7 +29,8 @@ struct CommandLineArgs {
     std::string bed_region_fname = NOT_PROVIDED;    // bcftools view -R
     std::string tier1_target_region = NOT_PROVIDED; // bcftools view -t
     std::string sample_name = "-";
-    
+
+    int32_t     region_padding_size = 20;
     size_t      max_cpu_num = 8;
     size_t      mem_per_thread = (1024 * 3 / 2); // MegaBytes, for samtools sort 1.11 the value is 768. Variant calling is more complex and mem-consuming than sorting.
     
