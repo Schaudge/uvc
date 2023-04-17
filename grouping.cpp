@@ -117,6 +117,11 @@ SamIter::bed_fname_to_contigs(
     for (uvc1_refgpos_t i = 0; i < bam_hdr->n_targets; i++) {
         tname_to_tid[bam_hdr->target_name[i]] = i;
     }
+    std::string previous_region_name("-1");
+    uvc1_refgpos_t previous_region_start(0);
+    uvc1_refgpos_t previous_region_end(INT32_MAX);
+    uvc1_flag_t previous_bedline_flag = 0x0;
+    uvc1_readnum_t previous_nreads = 0;
     std::ifstream bedfile(bed_fname);
     while (bedfile.good()) {
         std::string line;
@@ -142,19 +147,30 @@ SamIter::bed_fname_to_contigs(
             std::cerr << "The reference template name " << tname << " from the bedfile " << bed_fname << " is not in the input sam file";
             exit (17);
         }
-        uvc1_flag_t bedline_flag = 0x0;
-        std::string token;
-        uvc1_readnum_t nreads = ((-1 == bed_in_avg_sequencing_DP) ? 0 : (bed_in_avg_sequencing_DP * (tend - tbeg) + 1));
+        uvc1_readnum_t previous_nreads = ((-1 == bed_in_avg_sequencing_DP) ? 0 : (bed_in_avg_sequencing_DP * (tend - tbeg) + 1));
         while (linestream.good()) {
+            std::string token;
             linestream >> token;
             if (token == ("BedLineFlag")) {
-                linestream >> bedline_flag;
+                linestream >> previous_bedline_flag;
             } else if (token == "NumberOfReadsInThisInterval") {
-                linestream >> nreads;
+                linestream >> previous_nreads;
             }
         }
-        bedlines.push_back(BedLine(tname_to_tid[tname], tbeg, tend, bedline_flag, nreads));
+
+        // merge overlapped padding region
+        if (tname != previous_region_name || tbeg > previous_region_end) {
+            if (previous_region_name != "-1")
+                bedlines.emplace_back(tname_to_tid[previous_region_name], previous_region_start, previous_region_end,
+                                      previous_bedline_flag, previous_nreads);
+            previous_region_start = tbeg;
+            if (previous_region_name != tname) previous_region_name = tname;
+        }
+        previous_region_end = tend;
     }
+    if (previous_region_name != "-1")
+        bedlines.emplace_back(tname_to_tid[previous_region_name], previous_region_start, previous_region_end,
+                              previous_bedline_flag, previous_nreads);
     return 0;
 }
 
