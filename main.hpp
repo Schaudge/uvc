@@ -6215,6 +6215,9 @@ append_vcf_record(
     infostring += std::string(";R3X2=") + other_join(std::array<int32_t, 6>{{rtr1_tpos, rtr1.tracklen, rtr1.unitlen, rtr2_tpos, rtr2.tracklen, rtr2.unitlen}});
     
     std::string vcffilter = "";
+    if (is_processing_normal && ((tki.nDP >= 100 && tki.nADR[1] >= tki.nDP * 0.02) || (tki.nDP < 100 && tki.nADR[1] >= 2))) {
+        vcffilter += (std::string(bcfrec::FILTER_IDS[bcfrec::normal_artifact]) + ";");
+    }
     if (vcfqual < 10) {
         vcffilter += (std::string(bcfrec::FILTER_IDS[bcfrec::Q10]) + ";");
     } else if (vcfqual < 20) {
@@ -6243,7 +6246,7 @@ append_vcf_record(
                   || (vad2curr >= paramset.vad2 && vdp2curr >= paramset.vdp2 && (vdp2curr * paramset.vfa2) <= vad2curr))))
             && (symbol != refsymbol || (should_output_ref_allele)));
     const auto min_ad = ((symbol == refsymbol) ? paramset.min_r_ad : paramset.min_a_ad);
-    if (keep_var && tki.bDP >= min_ad) {
+    if ((keep_var || (is_processing_normal && tki.bcf1_record->qual >= paramset.vqual)) && tki.bDP >= min_ad) {
         const auto format_name_string = ((fmt.enable_tier2_consensus_format_tags) ? (bcfrec::FORMAT_STRING_PER_REC) : (bcfrec::FORMAT_STRING_PER_REC_WITHOUT_SSCS));
         out_string += string_join(std::array<std::string, 9>{{
                 std::string(tname), std::to_string(vcfpos), ".", vcfref, vcfalt, std::to_string(vcfqual), vcffilter, 

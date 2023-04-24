@@ -4,7 +4,7 @@ scriptdir="$(dirname "$(which "$0")")"
 if [ $# -lt 5 ]; then
     echo "Usage: $0 <REF> <tumorBam> <normalBam> <outputName> <tumorSampleName>[,<normalSampleName>][/<nprocs>[,<nprocs2>]/<parallel|qsub>] [<allParams>] [--tumor-params <tumorParams>] [--normal-params <normalParams>]"
     echo "  The output bgzipped vcf file is "
-    echo "    <outputName> (with <outputName>.byproduct/<tumorSampleName>_T_uvc1.vcf.gz as intermediate tumor vcf) if <normalSampleName> is provided or "
+    echo "    <outputName> (with <outputName>.tumor/<tumorSampleName>_T_uvc1.vcf.gz as intermediate tumor vcf) if <normalSampleName> is provided or "
     echo "    <outputName>/<tumorSampleName>_N_uvc1.vcf.gz (with <outputName>/<tumorSampleName>_T_uvc1.vcf.gz as intermediate tumor vcf) if normalSampleName is not provided. "
     echo "  <nprocs> is the number of processes corresponding to the number of chromosomes that are run concurrently in parallel, "
     echo "    where 0 (zero, which is the default value) means no chromosome-level parallelization. "
@@ -73,7 +73,7 @@ paratool=$(echo "$5/0/parallel" | awk -F"/" '{print $3}')
 if [ $(echo "${samplename}" | awk -F "," '{print NF}') -eq 2 ]; then
     tsample=$(echo "${samplename}" | awk -F "," '{print $1}')
     nsample=$(echo "${samplename}" | awk -F "," '{print $2}')
-    outdir="${4}.byproduct"
+    outdir="${4}.tumor"
     nvcfgz="${4}"
 else
     tsample="${samplename}_T"
