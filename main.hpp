@@ -6215,7 +6215,7 @@ append_vcf_record(
     infostring += std::string(";R3X2=") + other_join(std::array<int32_t, 6>{{rtr1_tpos, rtr1.tracklen, rtr1.unitlen, rtr2_tpos, rtr2.tracklen, rtr2.unitlen}});
     
     std::string vcffilter = "";
-    if (is_processing_normal && ((tki.nDP >= 100 && tki.nADR[1] >= tki.nDP * 0.02) || (tki.nDP < 100 && tki.nADR[1] >= 2))) {
+    if (is_processing_normal && vcfqual < paramset.vqual && ((tki.nDP >= 100 && tki.nADR[1] * 50 >= tki.nDP) || (tki.nDP < 100 && tki.nADR[1] >= 2))) {
         vcffilter += (std::string(bcfrec::FILTER_IDS[bcfrec::normal_artifact]) + ";");
     }
     if (vcfqual < 10) {
