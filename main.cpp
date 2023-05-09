@@ -446,7 +446,7 @@ rescue_hotspots_from_vcf(const std::string &hotspot_vcf_fname, const T *bcf_hdr)
 
         // construct the variation map key + value
         const AlignmentSymbol symbol = AlignmentSymbol(bcfints[1]);
-        auto symbolpos = ((isSymbolSubstitution(symbol) || DDITIONAL_INDEL_CANDIDATE_SYMBOL == symbol) ?
+        auto symbolpos = ((isSymbolSubstitution(symbol) || ADDITIONAL_INDEL_CANDIDATE_SYMBOL == symbol) ?
                 (line->pos) : (line->pos + 1));
 
         auto ref_alt_description = als_to_string(line->d.allele, line->n_allele);
