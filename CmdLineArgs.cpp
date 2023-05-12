@@ -285,6 +285,11 @@ CommandLineArgs::initFromArgCV(int & parsing_result_flag, int argc, const char *
            assay_type_uint, 
         "Assay type. " + stringvec_to_descstring(ASSAY_TYPE_TO_MSG));
 
+    ADD_OPTDEF(app,
+               "--hotspot-vcf",
+               hotspot_vcf_fname,
+               "Block-gzipped VCF file of the hotspot sites control the output of super-low frequent variations. ");
+
     ADD_OPTDEF(app, 
         "--tumor-vcf",
            vcf_tumor_fname,

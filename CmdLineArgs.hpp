@@ -52,7 +52,8 @@ struct CommandLineArgs {
     uvc1_readnum_t     fam_consensus_out_fastq_thres_dup1add = 1;
     
 // *** 01. parameters of the names of files, samples, regions, etc.
-    
+
+    std::string hotspot_vcf_fname = NOT_PROVIDED;
     std::string vcf_tumor_fname = NOT_PROVIDED;
     std::string bed_out_fname = NOT_PROVIDED;
     std::string bed_in_fname = NOT_PROVIDED;

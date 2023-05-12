@@ -520,13 +520,14 @@ umi_strand_readset_uvc_destroy(auto &umi_strand_readset) {
     }
 }
 
-template<class T>
+template<class T1, class T2>
 int
 process_batch(
         std::string &uncompressed_vcf_string,
         std::array<std::string, NUM_FQLIKE_CON_OUT_FILES> &uncompressed_3fastq_string,
-        BatchArg &arg,
-        const T &tid_pos_symb_to_tkis) {
+        BatchArg & arg,
+        const T1 & tid_pos_symb_to_tkis,
+        const T2 & tid_pos_symb_hotspot) {
 
     const faidx_t *const ref_faidx = arg.ref_faidx;
 
@@ -702,8 +703,8 @@ process_batch(
         uvc1_readpos_t prev_tracklen = 0;
         uvc1_readpos_t curr_tracklen = 0;
 
-        for (uvc1_refgpos_t zerobased_pos = rpos_inclu_beg;
-             zerobased_pos <= rpos_exclu_end; zerobased_pos++, prev_tracklen = curr_tracklen) {
+        for (uvc1_refgpos_t zerobased_pos = rpos_inclu_beg; zerobased_pos <= rpos_exclu_end; zerobased_pos++, prev_tracklen = curr_tracklen) {
+            // *** core process logic to create variations for every position
             std::string repeatunit;
             uvc1_readpos_t repeatnum = 0;
 
@@ -722,8 +723,8 @@ process_batch(
                                                               : BASE_NN);
             const AlignmentSymbol next_base1 = ((refidx < refsize) ? CHAR_TO_SYMBOL.data.at(refstring.at((refidx)))
                                                                    : BASE_NN);
-            const AlignmentSymbol next_base2 = ((refidx + 1 < refsize) ? CHAR_TO_SYMBOL.data.at(
-                    refstring.at((refidx + 1))) : BASE_NN);
+            const AlignmentSymbol next_base2 = ((refidx + 1 < refsize) ? CHAR_TO_SYMBOL.data.at(refstring.at((refidx + 1)))
+                                                                       : BASE_NN);
 
             std::array<bcfrec::BcfFormat, 2> st_to_init_fmt = {{bcfrec::BcfFormat(), bcfrec::BcfFormat()}};
 
@@ -751,9 +752,8 @@ process_batch(
                         symboltype,
                         refsymbol,
                         0);
-                if ((paramset.outvar_flag & OUTVAR_MGVCF) && ((((refpos) % MGVCF_REGION_MAX_SIZE) == 0)
-                                                              || (refpos == incluBegPosition)) &&
-                    (SYMBOL_TYPE_ARR[0] == symboltype)) {
+                if ((paramset.outvar_flag & OUTVAR_MGVCF) && ((((refpos) % MGVCF_REGION_MAX_SIZE) == 0) || (refpos == incluBegPosition))
+                     && (SYMBOL_TYPE_ARR[0] == symboltype)) {
                     const auto &frag_format_depth_sets = symbolToCountCoverageSet12.symbol_to_frag_format_depth_sets;
                     const auto &fam_format_depth_sets = symbolToCountCoverageSet12.symbol_to_fam_format_depth_sets_2strand;
 
@@ -769,13 +769,11 @@ process_batch(
                         for (SymbolType stype: SYMBOL_TYPES_IN_VCF_ORDER) {
                             const uvc1_rp_diff_t refstring_offset = rp2 - extended_inclu_beg_pos;
                             if (refstring_offset > UNSIGN2SIGN(refstring.size())) {
-                                fprintf(stderr, "The refstring offset %d at tid %d pos %d is invalid!\n\n",
-                                        refstring_offset, tid, refpos);
+                                fprintf(stderr, "The refstring offset %d at tid %d pos %d is invalid!\n\n", refstring_offset, tid, refpos);
                                 abort();
                             }
                             const AlignmentSymbol base_m = ((refstring_offset < UNSIGN2SIGN(refstring.size()))
-                                                            ? CHAR_TO_SYMBOL.data[refstring.substr(refstring_offset,
-                                                                                                   1)[0]]
+                                                            ? CHAR_TO_SYMBOL.data[refstring.substr(refstring_offset,1)[0]]
                                                             : BASE_N);
                             const auto refsymbol = ((BASE_SYMBOL == stype) ? (base_m) : (LINK_M));
                             uvc1_readnum_t curr_tot_bdepth = 0;
@@ -799,8 +797,7 @@ process_batch(
                                                                                       nonref_cdepth + 0.5,
                                                                                       curr_tot_cdepth + 1.0);
                             const auto ref_like_powlaw = -MAX(0, paramset.powlaw_exponent * (10 / log(10))
-                                                                 *
-                                                                 logit2((nonref_cdepth + 0.5) / (curr_tot_cdepth + 1.0),
+                                                                 * logit2((nonref_cdepth + 0.5) / (curr_tot_cdepth + 1.0),
                                                                         paramset.contam_any_mul_frac));
 
                             // hetero, higher nonref-FA (lower ref-FA) -> close to zero qual
@@ -808,14 +805,11 @@ process_batch(
                                                                                          ref_cdepth + 0.5,
                                                                                          curr_tot_cdepth + 1.0);
                             const auto nonref_like_powlaw = -MAX(0, paramset.powlaw_exponent * (10 / log(10))
-                                                                    *
-                                                                    logit2((ref_cdepth + 0.5) / (curr_tot_cdepth + 1.0),
+                                                                    * logit2((ref_cdepth + 0.5) / (curr_tot_cdepth + 1.0),
                                                                            paramset.germ_hetero_FA));
 
-                            const uvc1_qual_t curr_refQ = paramset.germ_phred_hetero_snp
-                                                          + (uvc1_qual_t) round(MAX(ref_like_binom, ref_like_powlaw)
-                                                                                - (uvc1_qual_t) round(
-                                    MAX(nonref_like_binom, nonref_like_powlaw)));
+                            const uvc1_qual_t curr_refQ = paramset.germ_phred_hetero_snp + (uvc1_qual_t) round(MAX(ref_like_binom, ref_like_powlaw)
+                                                                                - (uvc1_qual_t) round(MAX(nonref_like_binom, nonref_like_powlaw)));
                             if ((init_refQ == prev_refQ) || (abs(curr_refQ - prev_refQ) > 10)
                                 || are_depths_diff(curr_tot_bdepth, prev_tot_bdepth, 100 + 30, 3)
                                 || are_depths_diff(curr_tot_cdepth, prev_tot_cdepth, 100 + 30, 3)
@@ -881,8 +875,7 @@ process_batch(
                         refpos).segprep_a_near_long_clip_dp;
                 const auto ADP = symbolToCountCoverageSet12.seg_format_prep_sets.getByPos(refpos).segprep_a_dp;
 
-                const bool is_in_long_track = (curr_tracklen >
-                                               MAX(paramset.microadjust_alignment_tracklen_min - 1, prev_tracklen));
+                const bool is_in_long_track = (curr_tracklen > MAX(paramset.microadjust_alignment_tracklen_min - 1, prev_tracklen));
                 const bool is_in_clip_region = ((aCDP >= paramset.microadjust_alignment_clip_min_count)
                                                 && (aCDP >= ADP * (paramset.microadjust_alignment_clip_min_frac -
                                                                    DBL_EPSILON)));
@@ -973,7 +966,8 @@ process_batch(
                     if ((ISNT_PROVIDED(paramset.vcf_tumor_fname))
                         && (((refsymbol != symbol) && (bdepth < paramset.min_altdp_thres))
                             || ((refsymbol == symbol) && (bDPcDP[0] - ref_bdepth < paramset.min_altdp_thres)))
-                        && (!paramset.should_output_all)) {
+                        && (!paramset.should_output_all)
+                        && tid_pos_symb_hotspot.find(std::make_tuple(tid, refpos, symbol)) == tid_pos_symb_hotspot.end()) {
                         continue;
                     }
 
@@ -1284,28 +1278,20 @@ process_batch(
                                                  (double) nlodq_inc}}, "/") + "#"
                                                     + std::to_string(std::get<0>(nlodq_fmtptr1_fmtptr2_tup)) + "#"
                                                     + SYMBOL_TO_DESC_ARR[FIRST(
-                                                std::get<1>(nlodq_fmtptr1_fmtptr2_tup)->VTI)] + "//"
-                                                    + SYMBOL_TO_DESC_ARR[LAST(
-                                                std::get<1>(nlodq_fmtptr1_fmtptr2_tup)->VTI)] + "//"
-                                                    + SYMBOL_TO_DESC_ARR[LAST(
+                                                std::get<1>(nlodq_fmtptr1_fmtptr2_tup)->VTI)] + "//" + SYMBOL_TO_DESC_ARR[LAST(
+                                                std::get<1>(nlodq_fmtptr1_fmtptr2_tup)->VTI)] + "//" + SYMBOL_TO_DESC_ARR[LAST(
                                                 std::get<2>(nlodq_fmtptr1_fmtptr2_tup)->VTI)] + "//"
-                                                    + other_join(std::get<1>(nlodq_fmtptr1_fmtptr2_tup)->gVQ1, "/") +
-                                                    "//"
-                                                    + other_join(std::get<2>(nlodq_fmtptr1_fmtptr2_tup)->gVQ1, "/") +
-                                                    "//"
-                                                    + other_join(std::get<1>(nlodq_fmtptr1_fmtptr2_tup)->CONTQ, "/") +
-                                                    "//"
-                                                    + other_join(std::get<2>(nlodq_fmtptr1_fmtptr2_tup)->CONTQ, "/") +
-                                                    "//";
+                                                    + other_join(std::get<1>(nlodq_fmtptr1_fmtptr2_tup)->gVQ1, "/") + "//"
+                                                    + other_join(std::get<2>(nlodq_fmtptr1_fmtptr2_tup)->gVQ1, "/") + "//"
+                                                    + other_join(std::get<1>(nlodq_fmtptr1_fmtptr2_tup)->CONTQ, "/") + "//"
+                                                    + other_join(std::get<2>(nlodq_fmtptr1_fmtptr2_tup)->CONTQ, "/") + "//";
                                     }
                                 }
                             }
                             const auto totBDP = SUMPAIR(fmt.BDPb); // (fmt.BDPf[0] + fmt.BDPr[0]);
                             const auto n_norm_alts =
                                     (totBDP - (FIRST(fmt.bDPf) + FIRST(fmt.bDPr))) + (LAST(fmt.bDPf) + LAST(fmt.bDPr));
-                            nlodq = MAX(nlodq_singlesite + nlodq_inc, tki.vHGQ + MIN(3, totBDP - n_norm_alts *
-                                                                                                 (int) round(0.5 /
-                                                                                                             paramset.contam_any_mul_frac)));
+                            nlodq = MAX(nlodq_singlesite + nlodq_inc, tki.vHGQ + MIN(3, totBDP - n_norm_alts * (int) round(0.5 / paramset.contam_any_mul_frac)));
                         } else {
                             nlodq = nlodq_singlesample;
                         }
@@ -1329,12 +1315,14 @@ process_batch(
                                 bcf_hdr,
                                 baq_offsetarr,
                                 paramset,
+                                tid_pos_symb_hotspot.end() != tid_pos_symb_hotspot.find(std::make_tuple(tid, refpos, symbol)),
                                 0);
                     }
                 } // fmt_tki_tup_vec
             } // end of SYMBOL_TYPE_ARR
         } // zerobased_pos
     }
+
     if (is_loginfo_enabled) { LOG(logINFO) << "Thread " << thread_id << " starts destroying bam records"; }
     umi_strand_readset_uvc_destroy(umi_strand_readset);
     /*
@@ -1516,6 +1504,11 @@ main(int argc, char **argv) {
                                                      paramset.is_tumor_format_retrieved);
     LOG(logINFO) << "Rescued/retrieved " << tid_pos_symb_to_tkis1.size() << " variants in tier-1-region no "
                  << (n_sam_iters);
+
+    std::map<std::tuple<uvc1_refgpos_t, uvc1_refgpos_t, AlignmentSymbol>, std::vector<std::string>> tid_pos_symb_hotspot;
+    tid_pos_symb_hotspot = rescue_hotspots_from_vcf(paramset.hotspot_vcf_fname, g_bcf_hdr);
+    LOG(logINFO) << "Fetched " << tid_pos_symb_hotspot.size() << " variants for hotspot validation!";
+
     while (iter_nreads > 0) {
         n_sam_iters++;
         std::thread read_bam_thread(
@@ -1698,7 +1691,7 @@ main(int argc, char **argv) {
                            || !fprintf(stderr, "%lu < %lu failed!\n", (size_t) (batcharg.bedline.tid),
                                        tid_to_tname_tseqlen_tuple_vec.size()));
                 batcharg.tname_tseqlen_tuple = tid_to_tname_tseqlen_tuple_vec.at((batcharg.bedline.tid));
-                process_batch(uncompressed_vcf_string, uncompressed_3fastq_string, batcharg, tid_pos_symb_to_tkis1);
+                process_batch(uncompressed_vcf_string, uncompressed_3fastq_string, batcharg, tid_pos_symb_to_tkis1, tid_pos_symb_hotspot);
             }
             if (batcharg.is_vcf_out_pass_to_stdout) {
                 batcharg.outstring_pass += uncompressed_vcf_string;
