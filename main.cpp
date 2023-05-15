@@ -969,17 +969,20 @@ process_batch(
                             del1_cdepth += cdepth;
                         }
                     }
-                    if ((ISNT_PROVIDED(paramset.vcf_tumor_fname))
-                        && (((refsymbol != symbol) && (bdepth < paramset.min_altdp_thres))
-                            || ((refsymbol == symbol) && (bDPcDP[0] - ref_bdepth < paramset.min_altdp_thres)))
-                        && (!paramset.should_output_all)
-                        && tid_pos_symb_hotspot.find(std::make_tuple(tid, refpos, symbol)) == tid_pos_symb_hotspot.end()) {
+                    // refactor filter rule for standard, hotspot sites, rescued sites conditions!
+                    if (ISNT_PROVIDED(paramset.vcf_tumor_fname) &&
+                        ((tid_pos_symb_hotspot.find(std::make_tuple(tid, refpos, symbol)) != tid_pos_symb_hotspot.end() && bdepth < 1)
+                         || ( ((refsymbol != symbol && bdepth < paramset.min_altdp_thres) ||
+                              (refsymbol == symbol && bDPcDP[0] - ref_bdepth < paramset.min_altdp_thres) ) && !paramset.should_output_all)
+                         )) {
+                        continue;
+
+                    }
+                    if (IS_PROVIDED(paramset.vcf_tumor_fname) && (!is_pos_rescued)) { // TODO: output germline only mutation?
                         continue;
                     }
 
-                    if (IS_PROVIDED(paramset.vcf_tumor_fname) && (!is_pos_rescued)) {
-                        continue;
-                    }
+
                     const auto simplemut = std::make_pair(refpos, symbol);
                     const auto indices_bq = (simplemut2indices_bq.find(simplemut) != simplemut2indices_bq.end()
                                              ? simplemut2indices_bq[simplemut] : empty_size_t_set);
