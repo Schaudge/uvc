@@ -412,9 +412,8 @@ rescue_variants_from_vcf(
     return ret;
 }
 
-template<class T>
 std::map<std::tuple<uvc1_refgpos_t, uvc1_refgpos_t, AlignmentSymbol>, std::vector<std::string>>
-rescue_hotspots_from_vcf(const std::string &hotspot_vcf_fname, const T *bcf_hdr) {
+rescue_hotspots_from_vcf(const std::string & hotspot_vcf_fname) {
 
     std::map<std::tuple<uvc1_refgpos_t, uvc1_refgpos_t, AlignmentSymbol>, std::vector<std::string>> ret;
     if (ISNT_PROVIDED(hotspot_vcf_fname)) {
@@ -438,16 +437,22 @@ rescue_hotspots_from_vcf(const std::string &hotspot_vcf_fname, const T *bcf_hdr)
         exit(-9);
     }
 
+    htsFile * infile = hts_open(hotspot_vcf_fname.c_str(), "r");
+    bcf_hdr_t * hotspot_bcf_hdr = bcf_hdr_read(infile);
+    bcf_close(infile);
+
     int32_t *bcfints = NULL;
 
     while (bcf_sr_next_line(sr)) {
         bcf1_t *line = bcf_sr_get_line(sr, 0);
         bcf_unpack(line, BCF_UN_ALL);
 
+        int ndst_val(0);
+        int valsize = bcf_get_format_int32(hotspot_bcf_hdr, line, "VTI", &bcfints, &ndst_val);
         // construct the variation map key + value
         const AlignmentSymbol symbol = AlignmentSymbol(bcfints[1]);
-        auto symbolpos = ((isSymbolSubstitution(symbol) || ADDITIONAL_INDEL_CANDIDATE_SYMBOL == symbol) ?
-                (line->pos) : (line->pos + 1));
+        auto symbolpos = (isSymbolSubstitution(symbol) || ADDITIONAL_INDEL_CANDIDATE_SYMBOL == symbol) ?
+                                 (line->pos) : (line->pos + 1);
 
         auto ref_alt_description = als_to_string(line->d.allele, line->n_allele);
 
@@ -456,6 +461,7 @@ rescue_hotspots_from_vcf(const std::string &hotspot_vcf_fname, const T *bcf_hdr)
         ret[retkey].push_back(ref_alt_description);
     }
     xfree(bcfints);
+    bcf_hdr_destroy(hotspot_bcf_hdr);
     bcf_sr_destroy(sr);
     return ret;
 }
@@ -1506,7 +1512,7 @@ main(int argc, char **argv) {
                  << (n_sam_iters);
 
     std::map<std::tuple<uvc1_refgpos_t, uvc1_refgpos_t, AlignmentSymbol>, std::vector<std::string>> tid_pos_symb_hotspot;
-    tid_pos_symb_hotspot = rescue_hotspots_from_vcf(paramset.hotspot_vcf_fname, g_bcf_hdr);
+    tid_pos_symb_hotspot = rescue_hotspots_from_vcf(paramset.hotspot_vcf_fname);
     LOG(logINFO) << "Fetched " << tid_pos_symb_hotspot.size() << " variants for hotspot validation!";
 
     while (iter_nreads > 0) {
