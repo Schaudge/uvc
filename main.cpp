@@ -1678,7 +1678,7 @@ main(int argc, char **argv) {
             std::pair<size_t, size_t> beg_end_pair = beg_end_pair_vec[beg_end_pair_idx];
 #if defined(USE_STDLIB_THREAD)
             std::thread athread([
-                        &batcharg, allridx, beg_end_pair, beg_end_pair_idx, &bedlines, &tid_to_tname_tseqlen_tuple_vec, &tid_pos_symb_to_tkis1
+                        &batcharg, allridx, beg_end_pair, beg_end_pair_idx, &bedlines, &tid_to_tname_tseqlen_tuple_vec, &tid_pos_symb_to_tkis1, &tid_pos_symb_hotspot
                         ]() {
 #endif
             LOG(logINFO) << "Thread " << batcharg.thread_id << " will process the sub-chunk " << beg_end_pair_idx
