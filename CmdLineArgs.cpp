@@ -448,6 +448,12 @@ CommandLineArgs::initFromArgCV(int & parsing_result_flag, int argc, const char *
         "If this flag is zero, then infer such information from sequencing data. "
         "For example, if set to 0x3, then reads having the same begin and end positions are considered to be duplicates of each other. "
         "If the 0x4 bit is set, then only reads having the same read name can be assumed to originate from the same original DNA molecule, which essentially disables duplicate detection. ");
+    ADD_OPTDEF2(app, dedup_barcode_begin_char,
+        "The character that signals the beginning of the molecular-barcode (i.e., UMI) sequence in query name (i.e., read name). ");
+    ADD_OPTDEF2(app, dedup_barcode_end_char,
+        "The character that signals the end of the molecular-barcode (i.e., UMI) sequence in query name (i.e., read name). ");
+    ADD_OPTDEF2(app, dedup_barcode_duplex_sep_char,
+        "The character that signals the separation of the two parts of the duplex molecular-barcode (i.e., duplex UMI) sequence in query name (i.e., read name). ");
     
 // *** 05. parameters related to bias thresholds
     

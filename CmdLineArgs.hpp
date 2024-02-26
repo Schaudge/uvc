@@ -133,7 +133,9 @@ struct CommandLineArgs {
     double           dedup_amplicon_border_strong_minDP = 400;
 
     uvc1_flag_t      dedup_flag = 0x0;
-    
+    std::string dedup_barcode_begin_char = "#";
+    std::string dedup_barcode_end_char = "#";
+    std::string dedup_barcode_duplex_sep_char = "+";
 // *** 05. parameters related to bias thresholds
     
     uvc1_qual_t      bias_thres_highBQ = 20;

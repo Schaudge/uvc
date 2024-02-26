@@ -35,6 +35,8 @@ For example, the UMI-labeled read name can be
  2. "H5G5ABBCC:1:3010:10412:33669#AGTA+TGGT" (AGTA+TGGT is the duplex barcode).
 The auxiliary tool debarcode can be used for appending UMI sequences into read names.
 Running debarcode without any command-line argument will display its usage help.
+Please note that the command-line parameter --dedup-barcode-begin-char can be used to specify the character to be used instead of the default '#' character (for example, "--dedup-barcode-begin-char +" when using fgbio ExtractUMIsFromBam with --annotate-read-names set to true). 
+
 
 It is recommended to manually check the following outlier variant candidates if very high precision is required:
  1. for non-UMI data, variant candidates with FORMAT/FTS consisting of three or more filter strings (typically less than 1.5% of all variants).
