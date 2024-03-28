@@ -92,21 +92,21 @@ CommandLineArgs::selfUpdateByPlatform() {
         bam_hdr_destroy(samheader);
         sam_close(sam_infile);
         const bool isPE = (0 < countPE);
-        const bool is_double_Q20toQ30_lessthan_Q30plus = ((q30_n_fail_bases - q20_n_fail_bases) * 2 < q30_n_pass_bases);
-        const bool is_Q20toQ30_lessthan_Q30plus = ((q30_n_fail_bases - q20_n_fail_bases) < q30_n_pass_bases);
+        const bool is_2x_Q20toQ30_lessthan_Q30plus = (2 * (q30_n_fail_bases - q20_n_fail_bases) < q30_n_pass_bases);
+        const bool is_4x_Q20toQ30_lessthan_Q30plus = (4 * (q30_n_fail_bases - q20_n_fail_bases) < q30_n_pass_bases);
         // const bool isQ30BQ = (q30_n_fail_bases * 3 < q30_n_pass_bases);
         // const bool isQ30BQsoft = (q30_n_fail_bases < q30_n_pass_bases);
-        const bool isfixqlen = (qlens.at(qlens.size()/2) * 100 > qlens.at(qlens.size()-1) * 90);
-        if (isPE | is_double_Q20toQ30_lessthan_Q30plus || (is_Q20toQ30_lessthan_Q30plus && isfixqlen)) {
+        const bool isfixqlen = (qlens.at(qlens.size()/2) * 100 > qlens.at(qlens.size()-1) * 95);
+        if (isPE || is_4x_Q20toQ30_lessthan_Q30plus || (is_2x_Q20toQ30_lessthan_Q30plus && isfixqlen)) {
             inferred_sequencing_platform = SEQUENCING_PLATFORM_ILLUMINA;
         } else {
             inferred_sequencing_platform = SEQUENCING_PLATFORM_IONTORRENT;
         }
         std::cerr << "Inferred_sequencing_platform=" <<  SEQUENCING_PLATFORM_TO_NAME.at(inferred_sequencing_platform)
-                << " IsPairedEnd=" << isPE 
-                << " is 2*BQ30<(BQ30-BQ20) passed = " << is_double_Q20toQ30_lessthan_Q30plus
-                << " is BQ30<(BQ30-BQ20) passed = " << is_Q20toQ30_lessthan_Q30plus
-                << " isFixedReadQuerySeqLength = " << isfixqlen 
+                << "\n IsPairedEnd=" << isPE 
+                << "\n is 2*BQ30<(BQ30-BQ20) passed = " << is_2x_Q20toQ30_lessthan_Q30plus
+                << "\n is 4*BQ30<(BQ30-BQ20) passed = " << is_4x_Q20toQ30_lessthan_Q30plus
+                << "\n isFixedReadQuerySeqLength = " << isfixqlen 
                 << std::endl;
 
     }
@@ -474,6 +474,12 @@ CommandLineArgs::initFromArgCV(int & parsing_result_flag, int argc, const char *
         "If this flag is zero, then infer such information from sequencing data. "
         "For example, if set to 0x3, then reads having the same begin and end positions are considered to be duplicates of each other. "
         "If the 0x4 bit is set, then only reads having the same read name can be assumed to originate from the same original DNA molecule, which essentially disables duplicate detection. ");
+    ADD_OPTDEF2(app, dedup_barcode_begin_char,
+        "The character that signals the beginning of the molecular-barcode (i.e., UMI) sequence in query name (i.e., read name). ");
+    ADD_OPTDEF2(app, dedup_barcode_end_char,
+        "The character that signals the end of the molecular-barcode (i.e., UMI) sequence in query name (i.e., read name). ");
+    ADD_OPTDEF2(app, dedup_barcode_duplex_sep_char,
+        "The character that signals the separation of the two parts of the duplex molecular-barcode (i.e., duplex UMI) sequence in query name (i.e., read name). ");
     
 // *** 05. parameters related to bias thresholds
     
@@ -988,6 +994,11 @@ CommandLineArgs::initFromArgCV(int & parsing_result_flag, int argc, const char *
     ADD_OPTDEF2(app, microadjust_dedup_absence_indel_penalty,
         "Phred penalty applied to the single-sample power-law quality if no dedupping is performed for all InDel alleles including the REF. "
         "This case usually occurs in amplicon-sequencing data. ");
+    ADD_OPTDEF2(app, microadjust_median_readlen_thres,
+        "Mininum median read length below which microadjust-BAQ-per-base-x1024 is applied as an alternative way to compute base-alignment quality (BAQ). ");
+    ADD_OPTDEF2(app, microadjust_BAQ_per_base_x1024,
+        "Minimum base-alignment quality (BAQ) BAQ per base/1024 between the locus of interest and the end of segment "
+        "to rescue potential false negative calls due to increased bias at short read length. ");
     
     ADD_OPTDEF2(app, lib_wgs_min_avg_fraglen,
         "Minimum average fragment length, below which assay type is inferred to be non-WGS (whole-genome sequencing). ");
@@ -1001,6 +1012,10 @@ CommandLineArgs::initFromArgCV(int & parsing_result_flag, int argc, const char *
         "For non-WGS: normal effective allele-fraction (FA) cannot be reduced below this times the corresponding raw FA.");
     ADD_OPTDEF2(app, lib_nonwgs_normal_add_mul_ad,
         "For non-WGS: normal cross-sample read count is increased by this multiplicative factor. ");
+    ADD_OPTDEF2(app, lib_nonwgs_normal_max_rescued_MQ,
+        "For non-WGS: additional maximum Phred-scaled increase in the mapping quality part of the variant quality by comparing the tumor with its matched normal. ");
+    ADD_OPTDEF2(app, lib_wgs_normal_max_rescued_MQ,
+        "For WGS: additional maximum Phred-scaled increase in the mapping quality part of the variant quality by comparing the tumor with its matched normal. ");
     
 // *** 14 debugging
     

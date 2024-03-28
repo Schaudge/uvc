@@ -371,7 +371,7 @@ public:
         }
     };
     
-    template <bool TIsBestKeptAsCons>
+    template <bool TIsRefCountedOnlyOnce>
     int
     _fillConsensusCounts(
             AlignmentSymbol & count_argmax, uvc1_qual_t & count_max, uvc1_qual_t & count_sum,
@@ -382,7 +382,7 @@ public:
         count_max = 0;
         count_sum = 0;
         for (AlignmentSymbol symb = incluBeg; symb <= incluEnd; symb = AlignmentSymbol(((uvc1_unsigned_int_t)symb) + 1)) {
-            if (TIsBestKeptAsCons) {
+            if (TIsRefCountedOnlyOnce) {
                 if (count_max < this->symbol2data[symb] || (LINK_M == count_argmax && (0 < this->symbol2data[symb]))) {
                     count_argmax = symb;
                     count_max = this->symbol2data[symb];
@@ -401,7 +401,7 @@ public:
         return 0;
     };
     
-    template <bool TIsBestKeptAsCons = true, bool TIgnorePaddedDel = false>
+    template <bool TIsRefCountedOnceInLink = false, bool TIgnorePaddedDel = false>
     int
     fillConsensusCounts(
             AlignmentSymbol & count_argmax, uvc1_qual_t & count_max, uvc1_qual_t & count_sum,
@@ -409,21 +409,21 @@ public:
         if (symboltype == BASE_SYMBOL) {
             return this->template _fillConsensusCounts<false        >(count_argmax, count_max, count_sum, BASE_A, (TIgnorePaddedDel ? BASE_T : BASE_NN));
         } else if (symboltype == LINK_SYMBOL) {
-            return this->template _fillConsensusCounts<TIsBestKeptAsCons>(count_argmax, count_max, count_sum, LINK_M, LINK_NN);
+            return this->template _fillConsensusCounts<TIsRefCountedOnceInLink>(count_argmax, count_max, count_sum, LINK_M, LINK_NN);
         } else {
             abort();
             return -1;
         }
     };
     
-    template<bool TIsBestKeptAsCons>
+    template<bool TIsRefCountedOnceInLink>
     AlignmentSymbol
     _updateByConsensus(const GenericSymbol2Count<TInteger> & thatSymbol2Count,
             const SymbolType symboltype, const AlignmentSymbol ambig_pos, const uvc1_qual_t incvalue) {
         AlignmentSymbol argmax_count = END_ALIGNMENT_SYMBOLS; // AlignmentSymbol(0) is not fully correct
         uvc1_qual_t max_count = 0;
         uvc1_qual_t sum_count = 0;
-        thatSymbol2Count.template fillConsensusCounts<TIsBestKeptAsCons>(argmax_count, max_count, sum_count, symboltype);
+        thatSymbol2Count.template fillConsensusCounts<TIsRefCountedOnceInLink>(argmax_count, max_count, sum_count, symboltype);
         
         if (max_count > 0) {
             if ((sum_count - max_count) == 0) {
@@ -438,11 +438,11 @@ public:
         }
     };
 
-    template<bool TIsBestKeptAsCons = true>
+    template<bool TIsRefCountedOnceInLink = true>
     std::array<AlignmentSymbol, 2>
     updateByConsensus(const GenericSymbol2Count<TInteger> & thatSymbol2Count, uvc1_qual_t incvalue = 1) {
         AlignmentSymbol baseSymb = this->template _updateByConsensus<false        >(thatSymbol2Count, BASE_SYMBOL, BASE_NN, incvalue);
-        AlignmentSymbol linkSymb = this->template _updateByConsensus<TIsBestKeptAsCons>(thatSymbol2Count, LINK_SYMBOL, LINK_NN, incvalue);
+        AlignmentSymbol linkSymb = this->template _updateByConsensus<TIsRefCountedOnceInLink>(thatSymbol2Count, LINK_SYMBOL, LINK_NN, incvalue);
         return {baseSymb, linkSymb};
     };
     
@@ -463,7 +463,7 @@ public:
     };
     */
     
-    template <bool TIsBestKeptAsCons = true>
+    template <bool TIsRefCountedOnceInLink>
     int
     updateByFiltering(
             std::array<AlignmentSymbol, NUM_SYMBOL_TYPES> & con_symbols, 
@@ -476,7 +476,7 @@ public:
         uvc1_qual_t countalpha, totalalpha;
         for (SymbolType symboltype : SYMBOL_TYPE_ARR) {
             if (LINK_SYMBOL == symboltype) {
-                other.template fillConsensusCounts<TIsBestKeptAsCons>(consalpha, countalpha, totalalpha, symboltype);
+                other.template fillConsensusCounts<TIsRefCountedOnceInLink>(consalpha, countalpha, totalalpha, symboltype);
             } else {
                 if (is_padded_del_ignored) {
                     other.template fillConsensusCounts<false, true>(consalpha, countalpha, totalalpha, symboltype); 
@@ -1391,12 +1391,16 @@ dealwith_segbias(
     
     const auto rend = bam_endpos(aln);
     
-    const uvc1_qual_t seg_l_baq = baq_offsetarr.getByPos(rpos) - baq_offsetarr.getByPos(aln->core.pos) + 1;
+    const uvc1_qual_t seg_l_baq1 = baq_offsetarr.getByPos(rpos) - baq_offsetarr.getByPos(aln->core.pos) + 1;
     const uvc1_qual_t _seg_r_baq = baq_offsetarr.getByPos(rend-1) - baq_offsetarr.getByPos(rpos) + 1;
-    const uvc1_qual_t seg_r_baq = (isGap ? MIN(_seg_r_baq, baq_offsetarr2.getByPos(rend-1) - baq_offsetarr2.getByPos(rpos) + 7) : _seg_r_baq);
+    const uvc1_qual_t seg_r_baq1 = (isGap ? MIN(_seg_r_baq, baq_offsetarr2.getByPos(rend-1) - baq_offsetarr2.getByPos(rpos) + 7) : _seg_r_baq);
     
     const uvc1_refgpos_t seg_l_nbases = (rpos - aln->core.pos + 1);
     const uvc1_refgpos_t seg_r_nbases = (bam_endpos(aln) - rpos);
+    const bool is_high_readlen = (paramset.central_readlen >= paramset.microadjust_median_readlen_thres);
+    const uvc1_qual_t seg_l_baq = (is_high_readlen ? seg_l_baq1 : MAX(seg_l_baq1, seg_l_nbases * paramset.microadjust_BAQ_per_base_x1024 / 1024));
+    const uvc1_qual_t seg_r_baq = (is_high_readlen ? seg_r_baq1 : MAX(seg_r_baq1, seg_r_nbases * paramset.microadjust_BAQ_per_base_x1024 / 1024));
+    
     const uvc1_refgpos_t frag_pos_L = MIN(aln->core.pos, aln->core.mpos);
     const uvc1_refgpos_t frag_pos_R = frag_pos_L + abs(aln->core.isize);
     const uvc1_refgpos_t frag_l_nbases2 = ((aln->core.isize != 0) ? MIN(rpos - frag_pos_L + 1, MAX_INSERT_SIZE) : (MAX_INSERT_SIZE));
@@ -1632,12 +1636,12 @@ public:
     }
     */
     // Simplifed version of updateByFiltering
-    template<bool TIsIndelCounted = false, bool TIsConsensusBlock = false, bool TIsBestKeptAsCons = true> 
+    template<bool TIsIndelCounted = false, bool TIsConsensusBlock = false, bool TIsRefCountedOnceInLink = true> 
     void
     updateByConsensus(const GenericSymbol2CountCoverage<TSymbol2Count> &other, uvc1_readnum_t incvalue = 1) {
         this->assertUpdateIsLegal(other); 
         for (uvc1_refgpos_t epos = (other.getIncluBegPosition()); epos < UNSIGN2SIGN(other.getExcluEndPosition()); epos++) {
-            const std::array<AlignmentSymbol, NUM_SYMBOL_TYPES> consymbols = this->getRefByPos(epos).template updateByConsensus<TIsBestKeptAsCons>(other.getByPos(epos), incvalue);
+            const std::array<AlignmentSymbol, NUM_SYMBOL_TYPES> consymbols = this->getRefByPos(epos).template updateByConsensus<TIsRefCountedOnceInLink>(other.getByPos(epos), incvalue);
             if (TIsIndelCounted) {
                 if (isSymbolIns(consymbols[1])) {
                     posToIndelToCount_updateByConsensus(this->getRefPosToIseqToData(consymbols[1]), other.getPosToIseqToData(consymbols[1]), epos, incvalue);
@@ -1652,7 +1656,7 @@ public:
     }
     
     // Add read supports to a bigger family, while excluding read supports that did not pass the threshold.
-    template <bool TIsIndelCounted = false, bool TIsConsensusBlock = false, bool TIsBestKeptAsCons = true>
+    template <bool TIsIndelCounted = true, bool TIsConsensusBlock = false, bool TIsRefCountedOnceInLink = true>
     int
     updateByFiltering(
             const GenericSymbol2CountCoverage<TSymbol2Count> &other, 
@@ -1666,7 +1670,7 @@ public:
         auto excluEndPos = other.getExcluEndPosition();
         std::array<AlignmentSymbol, NUM_SYMBOL_TYPES> consymbols; 
         for (auto epos = incluBegPos; epos < excluEndPos; epos++) {
-            int updateresult = this->getRefByPos(epos).template updateByFiltering<TIsBestKeptAsCons>(
+            int updateresult = this->getRefByPos(epos).template updateByFiltering<TIsRefCountedOnceInLink>(
                     consymbols, 
                     other.getByPos(epos), 
                     is_padded_del_ignored,
@@ -1948,9 +1952,9 @@ if ((is_normal_used_to_filter_vars_on_primers || !is_assay_amplicon) || (ibeg <=
                     if (TIsProton && ((0 == i2) || (cigar_oplen - 1 == i2))) {
                         const auto prev_cigar = (0 < i ? cigar[i - 1] : -1);
                         const auto next_cigar = (i + 1 < n_cigar ? cigar[i + 1] : -1);
-                        if (((cigar_oplen - 1 == i2) && (BAM_CMATCH != next_cigar) && (BAM_CEQUAL != next_cigar) && (BAM_CDIFF != next_cigar))
-                                       || ((0 == i2) && (BAM_CMATCH != prev_cigar) && (BAM_CEQUAL != prev_cigar) && (BAM_CDIFF != prev_cigar))) {
-                            
+                        const bool next_cigar_is_gap = ((cigar_oplen - 1 == i2) && (BAM_CMATCH != next_cigar) && (BAM_CEQUAL != next_cigar) && (BAM_CDIFF != next_cigar));
+                        const bool prev_cigar_is_gap = ((0 == i2) && (BAM_CMATCH != prev_cigar) && (BAM_CEQUAL != prev_cigar) && (BAM_CDIFF != prev_cigar));
+                        if (next_cigar_is_gap || prev_cigar_is_gap) {
                             const bool isrc2 = (0 != i2);
                             uvc1_qual_t prev_base_phred = 1;
                             if ((isrc2) && (qpos + 1 < aln->core.l_qseq)) {
@@ -1959,8 +1963,14 @@ if ((is_normal_used_to_filter_vars_on_primers || !is_assay_amplicon) || (ibeg <=
                             if ((!isrc2) && (qpos > 0)) {
                                 prev_base_phred = BAM_PHREDI(aln, qpos - 1);
                             }
-                            
-                            incvalue = MIN(BAM_PHREDI(aln, qpos), prev_base_phred) + MIN(symboltype2addPhred[BASE_SYMBOL], symboltype2addPhred[LINK_SYMBOL]);
+                            uvc1_readpos_t adj_gap_cigarlen = 100; 
+                            if (next_cigar_is_gap) { UPDATE_MIN(adj_gap_cigarlen, ((i+1 < n_cigar) ? (bam_cigar_oplen(cigar[i + 1])) : 100)); }
+                            if (prev_cigar_is_gap) { UPDATE_MIN(adj_gap_cigarlen, ((0 < i) ? bam_cigar_oplen(cigar[i - 1]) : 100)); }
+                            if (adj_gap_cigarlen < 3) {
+                                incvalue = MIN(BAM_PHREDI(aln, qpos), prev_base_phred) + MIN(symboltype2addPhred[BASE_SYMBOL], symboltype2addPhred[LINK_SYMBOL]);
+                            } else {
+                                incvalue = MIN(BAM_PHREDI(aln, qpos), prev_base_phred) + symboltype2addPhred[BASE_SYMBOL];
+                            }
                         } else {
                             incvalue = BAM_PHREDI(aln, qpos) + symboltype2addPhred[BASE_SYMBOL]; 
                         }
@@ -3480,7 +3490,7 @@ if (paramset.inferred_is_vcf_generated) {
                         
                         AlignmentSymbol ref_symbol = region_symbolvec[epos - this->getUnifiedIncluBegPosition()]; 
                         const bool is_var_of_highBQ = ((SEQUENCING_PLATFORM_IONTORRENT == paramset.inferred_sequencing_platform)
-                                ? (BASE_SYMBOL == symboltype || confam_qual + 3 >= paramset.bias_thres_highBQ)
+                                ? (BASE_SYMBOL == symboltype || MAX(confam_qual + 3, avgBQ) >= paramset.bias_thres_highBQ)
                                 : (LINK_SYMBOL == symboltype || confam_qual >= paramset.bias_thres_highBQ));
                         if (areSymbolsMutated(ref_symbol, con_symbol) && is_var_of_highBQ) {
                             pos_symbol_string.push_back(std::make_pair(epos, con_symbol));
@@ -4608,6 +4618,11 @@ BcfFormat_symbol_calc_DPv(
     double cROFA1 = cROFA1x2[0] * dir_bias_div;
     double cROFA2 = cROFA2x2[0] * dir_bias_div;
     
+    if ((isSymbolIns(symbol) || isSymbolDel(symbol))) {
+        UPDATE_MIN(fmt.bAD[a], fmt.bDPa[a]);
+        UPDATE_MIN(fmt.AD[a], fmt.cDP0a[a]); 
+    }
+    
     double bFA = (fmt.bDPa[a] + pfa) / (SUMPAIR(fmt.BDPb) /*fmt.BDPf[0] + fmt.BDPr[0]*/ + 1.0);
     double cFA0 = (fmt.cDP0a[a] + pfa * (does_fmt_imply_short_frag(fmt, paramset.lib_wgs_min_avg_fraglen) ? paramset.lib_nonwgs_ad_pseudocount : 1.0)) 
             / (SUMPAIR(fmt.CDP1b) + 1.0); // (fmt.CDP1f[0] + fmt.CDP1r[0] + 1.0);
@@ -5205,6 +5220,8 @@ BcfFormat_symbol_calc_qual(
                 ? fmt.bMQ[a] // small
                 : (_systematicMQ_base - (uvc1_qual_t)(numstates2phred((ADP + 1.0) / (aDP + 0.5)))));
     // We may need to consider that: if an amplicon panel is designed for a target region, then there must be wet-lab protocol to deal with low mapping quality.
+    const bool is_nonWGS = does_fmt_imply_short_frag(fmt, paramset.lib_wgs_min_avg_fraglen);
+    const uvc1_qual_t normal_rescued_MQ = MIN(non_neg_minus(readlenMQcap, 60), (is_nonWGS ? paramset.lib_nonwgs_normal_max_rescued_MQ : paramset.lib_wgs_normal_max_rescued_MQ));
     
     auto systematicMQVQ1 = MIN((MAX(_systematicMQ, paramset.syserr_MQ_min) + _systematicMQVQadd), readlenMQcap);
 
@@ -5253,7 +5270,7 @@ BcfFormat_symbol_calc_qual(
              + (is_fmtADPxfr_imba ? paramset.microadjust_strand_absence_snv_penalty : 0))
             : (is_tmore_amplicon ? paramset.microadjust_dedup_absence_indel_penalty : 0));
     
-    const auto tn_syserr_q = systematicMQVQ + paramset.tn_q_inc_max;
+    const auto tn_syserr_q = systematicMQVQ + paramset.tn_q_inc_max + normal_rescued_MQ;
     
     clear_push(fmt.bMQQ, systematicMQVQ);
     
@@ -5929,12 +5946,12 @@ fill_conditional_tki(TumorKeyInfo & tki, const bcfrec::BcfFormat & fmt, const Al
     const uvc1_readnum_t duplex_coef_weight = 1;
     // extra code for backward compatibility
     if (TIsFmtTumor) {
-        tki.tDP = SUMPAIR(fmt.CDP1b); // (fmt.CDP1f[0] + fmt.CDP1r[0]);
-        tki.tADR = {{ fmt.cDP1f[0] + fmt.cDP1r[0], LAST(fmt.cDP1f) + LAST(fmt.cDP1r) }};
-        if ((isSymbolIns(symbol) || isSymbolDel(symbol))) {
-            UPDATE_MIN(tki.tADR[1], fmt.cDP0a[1]);
-        }
-	// tki.tDPC = SUMPAIR(fmt.CDP2b); // (fmt.CDP2f[0] + fmt.CDP2r[0]);
+        tki.tDP = fmt.DP; // SUMPAIR(fmt.CDP1b); // (fmt.CDP1f[0] + fmt.CDP1r[0]);
+        tki.tADR = {{ fmt.AD[0], fmt.AD[1] }}; // {{ fmt.cDP1f[0] + fmt.cDP1r[0], LAST(fmt.cDP1f) + LAST(fmt.cDP1r) }};
+        // if ((isSymbolIns(symbol) || isSymbolDel(symbol))) {
+        //     UPDATE_MIN(tki.tADR[1], fmt.cDP0a[1]);
+        // }
+        // tki.tDPC = SUMPAIR(fmt.CDP2b); // (fmt.CDP2f[0] + fmt.CDP2r[0]);
         // tki.tADCR = {{ fmt.cDP2f[0] + fmt.cDP2r[0], LAST(fmt.cDP2f) + LAST(fmt.cDP2r) }};
         tki.tDPC = SUMPAIR(fmt.CDPDb) + (SUMPAIR(fmt.DDP2) * duplex_coef_weight);
         const uvc1_readnum_t cond_altDP = ((isSymbolIns(symbol) || isSymbolDel(symbol)) 
@@ -5946,12 +5963,12 @@ fill_conditional_tki(TumorKeyInfo & tki, const bcfrec::BcfFormat & fmt, const Al
         //tki.nDPC = 0; // this tag does not seem to be useful in most situations
         tki.nADCR = {{ 0 }};
     } else {
-        tki.nDP = SUMPAIR(fmt.CDP1b);  //(fmt.CDP1f[0] + fmt.CDP1r[0]);
-        tki.nADR = {{ fmt.cDP1f[0] + fmt.cDP1r[0], LAST(fmt.cDP1f) + LAST(fmt.cDP1r) }};
-        if ((isSymbolIns(symbol) || isSymbolDel(symbol))) {
-            UPDATE_MIN(tki.nADR[1], fmt.cDP0a[1]);
-        }
-	//tki.nDPC = (fmt.CDP2f[0] + fmt.CDP2r[0]);
+        tki.nDP = fmt.DP; // SUMPAIR(fmt.CDP1b);  //(fmt.CDP1f[0] + fmt.CDP1r[0]);
+        tki.nADR = {{ fmt.AD[0], fmt.AD[1] }}; // {{ fmt.cDP1f[0] + fmt.cDP1r[0], LAST(fmt.cDP1f) + LAST(fmt.cDP1r) }};
+        // if ((isSymbolIns(symbol) || isSymbolDel(symbol))) {
+        //     UPDATE_MIN(tki.nADR[1], fmt.cDP0a[1]);
+        // }
+        //tki.nDPC = (fmt.CDP2f[0] + fmt.CDP2r[0]);
         //tki.nADCR = {{ fmt.cDP2f[0] + fmt.cDP2r[0], LAST(fmt.cDP2f) + LAST(fmt.cDP2r) }};
         // tki.nADCR = {{ fmt.cDPDf[0] + fmt.cDPDr[0] + (fmt.dDP2[0] * duplex_coef_weight), LAST(fmt.cDPDf) + LAST(fmt.cDPDr) + (LAST(fmt.dDP2) * duplex_coef_weight)}};
         const uvc1_readnum_t cond_altDP = ((isSymbolIns(symbol) || isSymbolDel(symbol)) 

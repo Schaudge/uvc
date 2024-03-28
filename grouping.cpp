@@ -272,7 +272,7 @@ SamIter::iternext(
                         << " total_n_reads=" << total_n_reads
                         << " approx total_n_ref_bases=" << (block_running_end - block_beg);
             }
-            uvc1_flag_t region_flag = (!!is_template_changed) * 16 + (!!is_far_jumped) * 8 + (!!is_sub_mem_over_lim) * 4 + (!!(sam_read_ret < -1)) * 2;
+            uvc1_flag_t region_flag = (!!is_template_changed) * 16 + (!!is_far_jumped) * 8 + (!!is_sub_mem_over_lim) * 4 + (!!(-1 == sam_read_ret)) * 2; // 0x1 bit is reserved for END_TO_END
             if (region_flag) {
                 // flush to output due to ref-genome segmentation
                 const bool is_1st_read = (-1 == block_tid); 
@@ -783,9 +783,9 @@ bamfname_to_strand_to_familyuid_to_reads(
         const uvc1_hash_t qname_hash = strhash(qname, 31UL);
         const uvc1_hash_t qname_hash2 = strhash(qname, 17UL);
         const size_t qname_len = strlen(qname);
-        const char *umi_beg1 = strchr(qname,   '#');
+        const char *umi_beg1 = strchr(qname,   paramset.dedup_barcode_begin_char[0]);
         const char *umi_beg = ((NULL != umi_beg1) ? (umi_beg1 + 1) : (qname + qname_len));
-        const char *umi_end1 = strchr(umi_beg, '#');
+        const char *umi_end1 = strchr(umi_beg, paramset.dedup_barcode_end_char[0]);
         const char *umi_end = ((NULL != umi_end1) ? (umi_end1    ) : (qname + qname_len)); 
        
         int is_umi_found = ((umi_beg + 1 < umi_end) && (MOLECULE_TAG_NONE != paramset.molecule_tag)); // UMI has at least one letter
@@ -794,7 +794,7 @@ bamfname_to_strand_to_familyuid_to_reads(
         const size_t umi_len = umi_end - umi_beg;
         if (is_umi_found) {
             size_t umi_half = (umi_end - umi_beg - 1) / 2;
-            if ((umi_len % 2 == 1 ) && ( '+' == umi_beg[umi_half]) && (!paramset.disable_duplex)) {
+            if ((umi_len % 2 == 1 ) && (paramset.dedup_barcode_duplex_sep_char[0] == umi_beg[umi_half]) && (!paramset.disable_duplex)) {
                 uvc1_hash_t umihash_part1 = strnhash(umi_beg               , umi_half); // alpha
                 uvc1_hash_t umihash_part2 = strnhash(umi_beg + umi_half + 1, umi_half); // beta
                 umihash = ((isrc ^ isr2) ? hash2hash(umihash_part1, umihash_part2) : hash2hash(umihash_part2, umihash_part1));
