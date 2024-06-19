@@ -5524,7 +5524,7 @@ output_germline(
         ref_alt1_alt2_alt3[2].first, 
         ref_alt1_alt2_alt3[3].first
         ));
-    
+
     uvc1_qual_t a0LODQ = ALODQ(ref_alt1_alt2_alt3[0].second);
     uvc1_qual_t a1LODQ = ALODQ(ref_alt1_alt2_alt3[1].second);
     uvc1_qual_t a2LODQ = ALODQ(ref_alt1_alt2_alt3[2].second);

@@ -1183,7 +1183,7 @@ process_batch(
                 }
 
                 std::vector<std::pair<AlignmentSymbol, bcfrec::BcfFormat *>> symbol_format_vec;
-                bool preset_flag_for_germline_output = true;
+                bool prefilter_for_germline_output = true;
                 for (auto &fmt_tki_tup: fmt_tki_tup_vec) {
                     auto &fmt = std::get<0>(fmt_tki_tup);
                     auto symbol = (AlignmentSymbol) (LAST(fmt.VTI));
@@ -1195,10 +1195,10 @@ process_batch(
                     if (symbol != BASE_NN) {
                         symbol_format_vec.push_back(std::make_pair(symbol, &fmt));
                         if (symbol != refsymbol && fmt.cDP0a[0] * 0.05 <= fmt.cDP0a[1])  // this statement is guaranteed by streamFrontPushBcfFormatR
-                            preset_flag_for_germline_output = false;
+                            prefilter_for_germline_output = false;
                     }
                 }
-                if (paramset.outvar_flag == OUTVAR_GERMLINE && preset_flag_for_germline_output) continue;  // skip all most germline output
+                if (paramset.outvar_flag == OUTVAR_GERMLINE && prefilter_for_germline_output) continue;  // skip all most germline output
 
                 clear_push(init_fmt.VTI, (int32_t) END_ALIGNMENT_SYMBOLS);
                 clear_push(init_fmt.gVQ1, 0); // can use a very negative number to force out all homref alleles
