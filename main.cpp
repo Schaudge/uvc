@@ -27,6 +27,8 @@ xfree(void *ptr) {
     if (NULL != ptr) { free(ptr); }
 }
 
+using barcode_block_t = std::vector<std::pair<std::array<std::vector<std::vector<bam1_t *>>, 2>, MolecularBarcode>>;
+
 template<bool TIsInputCompressed>
 int
 clearstring(BGZF *bgzip_file, const std::string &outstring_allp, bool is_output_to_stdout = false,
@@ -513,7 +515,7 @@ are_depths_diff(uvc1_readnum_t currDP, uvc1_readnum_t prevDP, uvc1_readnum_t mul
 }
 
 void
-umi_strand_readset_uvc_destroy(auto &umi_strand_readset) {
+umi_strand_readset_uvc_destroy(barcode_block_t &umi_strand_readset) {
     for (auto strand_readset: umi_strand_readset) {
         for (int strand = 0; strand < 2; strand++) {
             auto readset = strand_readset.first[strand];
@@ -559,7 +561,7 @@ process_batch(
 
     std::map<MolecularBarcode, std::pair<std::array<std::map<uvc1_hash_t, std::vector<bam1_t *>>, 2>, MolecularBarcode>> umi_to_strand_to_reads;
     uvc1_refgpos_t bam_inclu_beg_pos, bam_exclu_end_pos;
-    std::vector<std::pair<std::array<std::vector<std::vector<bam1_t *>>, 2>, MolecularBarcode>> umi_strand_readset;
+    barcode_block_t umi_strand_readset;
 
     if (is_loginfo_enabled) {
         LOG(logINFO) << "Thread " << thread_id
@@ -582,7 +584,7 @@ process_batch(
             thread_id,
             paramset,
             0);
-    const auto num_passed_reads = passed_pcrpassed_umipassed[0]; // -1 means that min read depth is not satisfied. 
+    const auto num_passed_reads = passed_pcrpassed_umipassed[0]; // -1 means that min read depth is not satisfied.
     const auto num_pcrpassed_reads = passed_pcrpassed_umipassed[1];
     const bool is_by_capture = ((num_pcrpassed_reads) * 2 <= num_passed_reads);
     const AssayType inferred_assay_type = ((ASSAY_TYPE_AUTO == paramset.assay_type) ? (is_by_capture
@@ -628,8 +630,8 @@ process_batch(
         num_rescued++;
         if (is_loginfo_enabled) {
             // The short deletion at 22:17946835 in NA12878-NA24385 mixture is overwhelmed by the false positve long del spanning the true positive short del.
-            // Due to the VCF specs and left alignment as best practice, the symmetry between left and right alignments are broken. 
-            // Thus, this variant is true positive if using left alignemnt but false positive if using right alignment. 
+            // Due to the VCF specs and left alignment as best practice, the symmetry between left and right alignments are broken.
+            // Thus, this variant is true positive if using left alignemnt but false positive if using right alignment.
             // TODO: modifications to the VCF specs or somatic-variant definitions, which is beyond the scope of this program.
             LOG(logDEBUG4) << "Thread " << thread_id << " iterated over symbolpos " << symbolpos << " and symbol "
                            << std::get<2>(tkis_it->first) << " as a rescued var";
@@ -1181,6 +1183,7 @@ process_batch(
                 }
 
                 std::vector<std::pair<AlignmentSymbol, bcfrec::BcfFormat *>> symbol_format_vec;
+                bool preset_flag_for_germline_output = true;
                 for (auto &fmt_tki_tup: fmt_tki_tup_vec) {
                     auto &fmt = std::get<0>(fmt_tki_tup);
                     auto symbol = (AlignmentSymbol) (LAST(fmt.VTI));
@@ -1191,8 +1194,12 @@ process_batch(
                     }
                     if (symbol != BASE_NN) {
                         symbol_format_vec.push_back(std::make_pair(symbol, &fmt));
+                        if (symbol != refsymbol && fmt.cDP0a[0] * 0.05 <= fmt.cDP0a[1])  // this statement is guaranteed by streamFrontPushBcfFormatR
+                            preset_flag_for_germline_output = false;
                     }
                 }
+                if (paramset.outvar_flag == OUTVAR_GERMLINE && preset_flag_for_germline_output) continue;  // skip all most germline output
+
                 clear_push(init_fmt.VTI, (int32_t) END_ALIGNMENT_SYMBOLS);
                 clear_push(init_fmt.gVQ1, 0); // can use a very negative number to force out all homref alleles
                 clear_push(init_fmt.CONTQ, 0);
@@ -1625,7 +1632,7 @@ main(int argc, char **argv) {
 
 #if defined(USE_STDLIB_THREAD)
         if ( nidxs <= beg_end_pair_vec.size()) {abort();}
-        std::vector<std::thread> threads; 
+        std::vector<std::thread> threads;
         threads.reserve(beg_end_pair_vec.size());
 #endif
         std::vector<BatchArg> batchargs;
